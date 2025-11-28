@@ -1,55 +1,55 @@
 ---
-description: Update dev documentation before context compaction
-argument-hint: Optional - specific context or tasks to focus on (leave empty for comprehensive update)
+description: context compaction 전에 개발 문서 업데이트
+argument-hint: 선택사항 - 집중할 특정 컨텍스트나 작업 (종합 업데이트를 원하면 비워두세요)
 ---
 
-We're approaching context limits. Please update the development documentation to ensure seamless continuation after context reset.
+Context 한도에 도달하고 있습니다. Context 리셋 후 원활한 작업 연속성을 보장하기 위해 개발 문서를 업데이트해 주세요.
 
-## Required Updates
+## 필수 업데이트 항목
 
-### 1. Update Active Task Documentation
-For each task in `/dev/active/`:
-- Update `[task-name]-context.md` with:
-  - Current implementation state
-  - Key decisions made this session
-  - Files modified and why
-  - Any blockers or issues discovered
-  - Next immediate steps
-  - Last Updated timestamp
+### 1. 활성 작업 문서 업데이트
+`/dev/active/`의 각 작업에 대해:
+- `[task-name]-context.md` 업데이트:
+  - 현재 구현 상태
+  - 이번 세션에서 내린 주요 결정
+  - 수정한 파일과 이유
+  - 발견된 차단 요소나 문제
+  - 다음 즉시 수행할 단계
+  - 최종 업데이트 타임스탬프
 
-- Update `[task-name]-tasks.md` with:
-  - Mark completed tasks as ✅ 
-  - Add any new tasks discovered
-  - Update in-progress tasks with current status
-  - Reorder priorities if needed
+- `[task-name]-tasks.md` 업데이트:
+  - 완료된 작업은 ✅로 표시
+  - 발견된 새 작업 추가
+  - 진행 중인 작업의 현재 상태 업데이트
+  - 필요시 우선순위 재정렬
 
-### 2. Capture Session Context
-Include any relevant information about:
-- Complex problems solved
-- Architectural decisions made
-- Tricky bugs found and fixed
-- Integration points discovered
-- Testing approaches used
-- Performance optimizations made
+### 2. 세션 컨텍스트 캡처
+관련 정보 포함:
+- 해결한 복잡한 문제
+- 내린 아키텍처 결정
+- 발견하고 수정한 까다로운 버그
+- 발견한 통합 포인트
+- 사용한 테스트 접근 방식
+- 수행한 성능 최적화
 
-### 3. Update Memory (if applicable)
-- Store any new patterns or solutions in project memory/documentation
-- Update entity relationships discovered
-- Add observations about system behavior
+### 3. 메모리 업데이트 (해당되는 경우)
+- 새로운 패턴이나 솔루션을 프로젝트 메모리/문서에 저장
+- 발견한 엔티티 관계 업데이트
+- 시스템 동작에 대한 관찰 내용 추가
 
-### 4. Document Unfinished Work
-- What was being worked on when context limit approached
-- Exact state of any partially completed features
-- Commands that need to be run on restart
-- Any temporary workarounds that need permanent fixes
+### 4. 미완료 작업 문서화
+- Context 한도 도달 시 작업 중이던 내용
+- 부분적으로 완료된 기능의 정확한 상태
+- 재시작 시 실행해야 할 명령어
+- 영구적인 수정이 필요한 임시 해결책
 
-### 5. Create Handoff Notes
-If switching to a new conversation:
-- Exact file and line being edited
-- The goal of current changes
-- Any uncommitted changes that need attention
-- Test commands to verify work
+### 5. 인수인계 노트 작성
+새 대화로 전환하는 경우:
+- 편집 중인 정확한 파일과 라인
+- 현재 변경 사항의 목표
+- 주의가 필요한 커밋되지 않은 변경 사항
+- 작업 검증을 위한 테스트 명령어
 
-## Additional Context: $ARGUMENTS
+## 추가 컨텍스트: $ARGUMENTS
 
-**Priority**: Focus on capturing information that would be hard to rediscover or reconstruct from code alone.
+**우선순위**: 코드만으로는 재발견하거나 재구성하기 어려운 정보를 캡처하는 데 집중하세요.

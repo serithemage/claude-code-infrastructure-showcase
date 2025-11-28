@@ -1,27 +1,27 @@
-# skill-rules.json - Complete Reference
+# skill-rules.json - 전체 참조
 
-Complete schema and configuration reference for `.claude/skills/skill-rules.json`.
+`.claude/skills/skill-rules.json`에 대한 전체 스키마 및 설정 참조입니다.
 
-## Table of Contents
+## 목차
 
-- [File Location](#file-location)
-- [Complete TypeScript Schema](#complete-typescript-schema)
-- [Field Guide](#field-guide)
-- [Example: Guardrail Skill](#example-guardrail-skill)
-- [Example: Domain Skill](#example-domain-skill)
-- [Validation](#validation)
-
----
-
-## File Location
-
-**Path:** `.claude/skills/skill-rules.json`
-
-This JSON file defines all skills and their trigger conditions for the auto-activation system.
+- [파일 위치](#파일-위치)
+- [전체 TypeScript 스키마](#전체-typescript-스키마)
+- [필드 가이드](#필드-가이드)
+- [예시: Guardrail Skill](#예시-guardrail-skill)
+- [예시: Domain Skill](#예시-domain-skill)
+- [검증](#검증)
 
 ---
 
-## Complete TypeScript Schema
+## 파일 위치
+
+**경로:** `.claude/skills/skill-rules.json`
+
+이 JSON 파일은 자동 활성화 시스템을 위한 모든 skills와 트리거 조건을 정의합니다.
+
+---
+
+## 전체 TypeScript 스키마
 
 ```typescript
 interface SkillRules {
@@ -36,82 +36,82 @@ interface SkillRule {
 
     promptTriggers?: {
         keywords?: string[];
-        intentPatterns?: string[];  // Regex strings
+        intentPatterns?: string[];  // Regex 문자열
     };
 
     fileTriggers?: {
-        pathPatterns: string[];     // Glob patterns
-        pathExclusions?: string[];  // Glob patterns
-        contentPatterns?: string[]; // Regex strings
-        createOnly?: boolean;       // Only trigger on file creation
+        pathPatterns: string[];     // Glob 패턴
+        pathExclusions?: string[];  // Glob 패턴
+        contentPatterns?: string[]; // Regex 문자열
+        createOnly?: boolean;       // 파일 생성 시에만 트리거
     };
 
-    blockMessage?: string;  // For guardrails, {file_path} placeholder
+    blockMessage?: string;  // Guardrails용, {file_path} 플레이스홀더
 
     skipConditions?: {
-        sessionSkillUsed?: boolean;      // Skip if used in session
-        fileMarkers?: string[];          // e.g., ["@skip-validation"]
-        envOverride?: string;            // e.g., "SKIP_DB_VERIFICATION"
+        sessionSkillUsed?: boolean;      // 세션에서 사용된 경우 스킵
+        fileMarkers?: string[];          // 예: ["@skip-validation"]
+        envOverride?: string;            // 예: "SKIP_DB_VERIFICATION"
     };
 }
 ```
 
 ---
 
-## Field Guide
+## 필드 가이드
 
-### Top Level
+### 최상위 레벨
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `version` | string | Yes | Schema version (currently "1.0") |
-| `skills` | object | Yes | Map of skill name → SkillRule |
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| `version` | string | 예 | 스키마 버전 (현재 "1.0") |
+| `skills` | object | 예 | skill 이름 → SkillRule 맵 |
 
-### SkillRule Fields
+### SkillRule 필드
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `type` | string | Yes | "guardrail" (enforced) or "domain" (advisory) |
-| `enforcement` | string | Yes | "block" (PreToolUse), "suggest" (UserPromptSubmit), or "warn" |
-| `priority` | string | Yes | "critical", "high", "medium", or "low" |
-| `promptTriggers` | object | Optional | Triggers for UserPromptSubmit hook |
-| `fileTriggers` | object | Optional | Triggers for PreToolUse hook |
-| `blockMessage` | string | Optional* | Required if enforcement="block". Use `{file_path}` placeholder |
-| `skipConditions` | object | Optional | Escape hatches and session tracking |
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| `type` | string | 예 | "guardrail" (강제) 또는 "domain" (권고) |
+| `enforcement` | string | 예 | "block" (PreToolUse), "suggest" (UserPromptSubmit), 또는 "warn" |
+| `priority` | string | 예 | "critical", "high", "medium", 또는 "low" |
+| `promptTriggers` | object | 선택 | UserPromptSubmit hook용 트리거 |
+| `fileTriggers` | object | 선택 | PreToolUse hook용 트리거 |
+| `blockMessage` | string | 선택* | enforcement="block"인 경우 필수. `{file_path}` 플레이스홀더 사용 |
+| `skipConditions` | object | 선택 | 탈출 조건 및 세션 추적 |
 
-*Required for guardrails
+*Guardrails에 필수
 
-### promptTriggers Fields
+### promptTriggers 필드
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `keywords` | string[] | Optional | Exact substring matches (case-insensitive) |
-| `intentPatterns` | string[] | Optional | Regex patterns for intent detection |
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| `keywords` | string[] | 선택 | 정확한 부분 문자열 매칭 (대소문자 구분 안 함) |
+| `intentPatterns` | string[] | 선택 | Intent 감지용 Regex 패턴 |
 
-### fileTriggers Fields
+### fileTriggers 필드
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `pathPatterns` | string[] | Yes* | Glob patterns for file paths |
-| `pathExclusions` | string[] | Optional | Glob patterns to exclude (e.g., test files) |
-| `contentPatterns` | string[] | Optional | Regex patterns to match file content |
-| `createOnly` | boolean | Optional | Only trigger when creating new files |
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| `pathPatterns` | string[] | 예* | 파일 경로용 Glob 패턴 |
+| `pathExclusions` | string[] | 선택 | 제외할 Glob 패턴 (예: 테스트 파일) |
+| `contentPatterns` | string[] | 선택 | 파일 내용 매칭용 Regex 패턴 |
+| `createOnly` | boolean | 선택 | 새 파일 생성 시에만 트리거 |
 
-*Required if fileTriggers is present
+*fileTriggers가 있는 경우 필수
 
-### skipConditions Fields
+### skipConditions 필드
 
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `sessionSkillUsed` | boolean | Optional | Skip if skill already used this session |
-| `fileMarkers` | string[] | Optional | Skip if file contains comment marker |
-| `envOverride` | string | Optional | Environment variable name to disable skill |
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| `sessionSkillUsed` | boolean | 선택 | 이 세션에서 skill이 이미 사용된 경우 스킵 |
+| `fileMarkers` | string[] | 선택 | 파일에 주석 마커가 포함된 경우 스킵 |
+| `envOverride` | string | 선택 | Skill을 비활성화하는 환경 변수 이름 |
 
 ---
 
-## Example: Guardrail Skill
+## 예시: Guardrail Skill
 
-Complete example of a blocking guardrail skill with all features:
+모든 기능이 포함된 차단 guardrail skill의 전체 예시:
 
 ```json
 {
@@ -182,21 +182,21 @@ Complete example of a blocking guardrail skill with all features:
 }
 ```
 
-### Key Points for Guardrails
+### Guardrails 핵심 포인트
 
-1. **type**: Must be "guardrail"
-2. **enforcement**: Must be "block"
-3. **priority**: Usually "critical" or "high"
-4. **blockMessage**: Required, clear actionable steps
-5. **skipConditions**: Session tracking prevents repeated nagging
-6. **fileTriggers**: Usually has both path and content patterns
-7. **contentPatterns**: Catch actual usage of technology
+1. **type**: "guardrail"이어야 함
+2. **enforcement**: "block"이어야 함
+3. **priority**: 보통 "critical" 또는 "high"
+4. **blockMessage**: 필수, 명확하고 실행 가능한 단계
+5. **skipConditions**: 세션 추적으로 반복 알림 방지
+6. **fileTriggers**: 보통 경로와 콘텐츠 패턴 모두 포함
+7. **contentPatterns**: 기술의 실제 사용 감지
 
 ---
 
-## Example: Domain Skill
+## 예시: Domain Skill
 
-Complete example of a suggestion-based domain skill:
+제안 기반 domain skill의 전체 예시:
 
 ```json
 {
@@ -250,66 +250,66 @@ Complete example of a suggestion-based domain skill:
 }
 ```
 
-### Key Points for Domain Skills
+### Domain Skills 핵심 포인트
 
-1. **type**: Must be "domain"
-2. **enforcement**: Usually "suggest"
-3. **priority**: "high" or "medium"
-4. **blockMessage**: Not needed (doesn't block)
-5. **skipConditions**: Optional (less critical)
-6. **promptTriggers**: Usually has extensive keywords
-7. **fileTriggers**: May have only path patterns (content less important)
+1. **type**: "domain"이어야 함
+2. **enforcement**: 보통 "suggest"
+3. **priority**: "high" 또는 "medium"
+4. **blockMessage**: 필요 없음 (차단하지 않음)
+5. **skipConditions**: 선택 (덜 중요함)
+6. **promptTriggers**: 보통 광범위한 키워드 포함
+7. **fileTriggers**: 경로 패턴만 있을 수 있음 (콘텐츠는 덜 중요)
 
 ---
 
-## Validation
+## 검증
 
-### Check JSON Syntax
+### JSON 구문 확인
 
 ```bash
 cat .claude/skills/skill-rules.json | jq .
 ```
 
-If valid, jq will pretty-print the JSON. If invalid, it will show the error.
+유효한 경우 jq가 JSON을 예쁘게 출력합니다. 유효하지 않은 경우 오류를 표시합니다.
 
-### Common JSON Errors
+### 일반적인 JSON 오류
 
-**Trailing comma:**
+**후행 쉼표:**
 ```json
 {
-  "keywords": ["one", "two",]  // ❌ Trailing comma
+  "keywords": ["one", "two",]  // ❌ 후행 쉼표
 }
 ```
 
-**Missing quotes:**
+**따옴표 누락:**
 ```json
 {
-  type: "guardrail"  // ❌ Missing quotes on key
+  type: "guardrail"  // ❌ 키에 따옴표 누락
 }
 ```
 
-**Single quotes (invalid JSON):**
+**작은따옴표 (유효하지 않은 JSON):**
 ```json
 {
-  'type': 'guardrail'  // ❌ Must use double quotes
+  'type': 'guardrail'  // ❌ 큰따옴표 사용해야 함
 }
 ```
 
-### Validation Checklist
+### 검증 체크리스트
 
-- [ ] JSON syntax valid (use `jq`)
-- [ ] All skill names match SKILL.md filenames
-- [ ] Guardrails have `blockMessage`
-- [ ] Block messages use `{file_path}` placeholder
-- [ ] Intent patterns are valid regex (test on regex101.com)
-- [ ] File path patterns use correct glob syntax
-- [ ] Content patterns escape special characters
-- [ ] Priority matches enforcement level
-- [ ] No duplicate skill names
+- [ ] JSON 구문 유효함 (`jq` 사용)
+- [ ] 모든 skill 이름이 SKILL.md 파일명과 일치함
+- [ ] Guardrails에 `blockMessage` 있음
+- [ ] 차단 메시지가 `{file_path}` 플레이스홀더 사용함
+- [ ] Intent 패턴이 유효한 regex임 (regex101.com에서 테스트)
+- [ ] 파일 경로 패턴이 올바른 glob 문법 사용함
+- [ ] 콘텐츠 패턴이 특수 문자 이스케이프함
+- [ ] 우선순위가 적용 수준과 일치함
+- [ ] 중복 skill 이름 없음
 
 ---
 
-**Related Files:**
-- [SKILL.md](SKILL.md) - Main skill guide
-- [TRIGGER_TYPES.md](TRIGGER_TYPES.md) - Complete trigger documentation
-- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Debugging configuration issues
+**관련 파일:**
+- [SKILL.md](SKILL.md) - 메인 skill 가이드
+- [TRIGGER_TYPES.md](TRIGGER_TYPES.md) - 전체 트리거 문서
+- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - 설정 문제 디버깅

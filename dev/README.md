@@ -1,76 +1,76 @@
-# Dev Docs Pattern
+# Dev Docs 패턴
 
-A methodology for maintaining project context across Claude Code sessions and context resets.
-
----
-
-## The Problem
-
-**Context resets lose everything:**
-- Implementation decisions
-- Key files and their purposes
-- Task progress
-- Technical constraints
-- Why certain approaches were chosen
-
-**After a reset, Claude has to rediscover everything.**
+Claude Code 세션과 context 리셋 간에 프로젝트 context를 유지하기 위한 방법론입니다.
 
 ---
 
-## The Solution: Persistent Dev Docs
+## 문제점
 
-A three-file structure that captures everything needed to resume work:
+**Context 리셋은 모든 것을 잃어버립니다:**
+- 구현 결정사항
+- 주요 파일들과 그 목적
+- 작업 진행 상황
+- 기술적 제약사항
+- 특정 접근법을 선택한 이유
+
+**리셋 후, Claude는 모든 것을 다시 발견해야 합니다.**
+
+---
+
+## 해결책: 영구적인 Dev Docs
+
+작업을 재개하는 데 필요한 모든 것을 담는 3-파일 구조:
 
 ```
 dev/active/[task-name]/
-├── [task-name]-plan.md      # Strategic plan
-├── [task-name]-context.md   # Key decisions & files
-└── [task-name]-tasks.md     # Checklist format
+├── [task-name]-plan.md      # 전략적 계획
+├── [task-name]-context.md   # 주요 결정사항 & 파일들
+└── [task-name]-tasks.md     # 체크리스트 형식
 ```
 
-**These files survive context resets** - Claude reads them to get back up to speed instantly.
+**이 파일들은 context 리셋에도 살아남습니다** - Claude가 이를 읽어 즉시 작업을 재개할 수 있습니다.
 
 ---
 
-## Three-File Structure
+## 3-파일 구조
 
 ### 1. [task-name]-plan.md
 
-**Purpose:** Strategic plan for the implementation
+**목적:** 구현을 위한 전략적 계획
 
-**Contains:**
-- Executive summary
-- Current state analysis
-- Proposed future state
-- Implementation phases
-- Detailed tasks with acceptance criteria
-- Risk assessment
-- Success metrics
-- Timeline estimates
+**포함 내용:**
+- 요약
+- 현재 상태 분석
+- 제안된 미래 상태
+- 구현 단계
+- 수락 기준이 포함된 상세 작업
+- 위험 평가
+- 성공 지표
+- 일정 추정
 
-**When to create:** At the start of a complex task
+**생성 시점:** 복잡한 작업 시작 시
 
-**When to update:** When scope changes or new phases discovered
+**업데이트 시점:** 범위가 변경되거나 새로운 단계가 발견되었을 때
 
-**Example:**
+**예시:**
 ```markdown
-# Feature Name - Implementation Plan
+# 기능 이름 - 구현 계획
 
-## Executive Summary
-What we're building and why
+## 요약
+무엇을 구축하고 있으며 왜 하는가
 
-## Current State
-Where we are now
+## 현재 상태
+현재 위치
 
-## Implementation Phases
+## 구현 단계
 
-### Phase 1: Infrastructure (2 hours)
-- Task 1.1: Set up database schema
-  - Acceptance: Schema compiles, relationships correct
-- Task 1.2: Create service structure
-  - Acceptance: All directories created
+### Phase 1: Infrastructure (2시간)
+- Task 1.1: Database schema 설정
+  - 수락: Schema 컴파일됨, 관계 올바름
+- Task 1.2: Service 구조 생성
+  - 수락: 모든 디렉토리 생성됨
 
-### Phase 2: Core Functionality (3 hours)
+### Phase 2: Core Functionality (3시간)
 ...
 ```
 
@@ -78,347 +78,347 @@ Where we are now
 
 ### 2. [task-name]-context.md
 
-**Purpose:** Key information for resuming work
+**목적:** 작업 재개를 위한 주요 정보
 
-**Contains:**
-- SESSION PROGRESS section (updated frequently!)
-- What's completed vs in-progress
-- Key files and their purposes
-- Important decisions made
-- Technical constraints discovered
-- Links to related files
-- Quick resume instructions
+**포함 내용:**
+- SESSION PROGRESS 섹션 (자주 업데이트!)
+- 완료된 것 vs 진행 중인 것
+- 주요 파일들과 그 목적
+- 중요한 결정사항
+- 발견된 기술적 제약사항
+- 관련 파일 링크
+- 빠른 재개 지침
 
-**When to create:** Start of task
+**생성 시점:** 작업 시작 시
 
-**When to update:** **FREQUENTLY** - after major decisions, completions, or discoveries
+**업데이트 시점:** **자주** - 주요 결정, 완료, 또는 발견 후
 
-**Example:**
+**예시:**
 ```markdown
-# Feature Name - Context
+# 기능 이름 - Context
 
 ## SESSION PROGRESS (2025-10-29)
 
-### ✅ COMPLETED
-- Database schema created (User, Post, Comment models)
-- PostController implemented with BaseController pattern
-- Sentry integration working
+### ✅ 완료
+- Database schema 생성됨 (User, Post, Comment 모델)
+- PostController를 BaseController 패턴으로 구현
+- Sentry 통합 작동 중
 
-### 🟡 IN PROGRESS
-- Creating PostService with business logic
-- File: src/services/postService.ts
+### 🟡 진행 중
+- 비즈니스 로직이 있는 PostService 생성 중
+- 파일: src/services/postService.ts
 
-### ⚠️ BLOCKERS
-- Need to decide on caching strategy
+### ⚠️ 차단 요소
+- 캐싱 전략 결정 필요
 
-## Key Files
+## 주요 파일
 
 **src/controllers/PostController.ts**
-- Extends BaseController
-- Handles HTTP requests for posts
-- Delegates to PostService
+- BaseController 확장
+- Posts에 대한 HTTP 요청 처리
+- PostService에 위임
 
-**src/services/postService.ts** (IN PROGRESS)
-- Business logic for post operations
-- Next: Add caching
+**src/services/postService.ts** (진행 중)
+- Post 작업을 위한 비즈니스 로직
+- 다음: 캐싱 추가
 
-## Quick Resume
-To continue:
-1. Read this file
-2. Continue implementing PostService.createPost()
-3. See tasks file for remaining work
+## 빠른 재개
+계속하려면:
+1. 이 파일 읽기
+2. PostService.createPost() 구현 계속하기
+3. 남은 작업은 tasks 파일 참조
 ```
 
-**CRITICAL:** Update the SESSION PROGRESS section every time significant work is done!
+**중요:** 중요한 작업이 완료될 때마다 SESSION PROGRESS 섹션을 업데이트하세요!
 
 ---
 
 ### 3. [task-name]-tasks.md
 
-**Purpose:** Checklist for tracking progress
+**목적:** 진행 상황 추적을 위한 체크리스트
 
-**Contains:**
-- Phases broken down by logical sections
-- Tasks in checkbox format
-- Status indicators (✅/🟡/⏳)
-- Acceptance criteria
-- Quick resume section
+**포함 내용:**
+- 논리적 섹션으로 나뉜 단계들
+- 체크박스 형식의 작업들
+- 상태 표시자 (✅/🟡/⏳)
+- 수락 기준
+- 빠른 재개 섹션
 
-**When to create:** Start of task
+**생성 시점:** 작업 시작 시
 
-**When to update:** After completing each task or discovering new tasks
+**업데이트 시점:** 각 작업 완료 후 또는 새 작업 발견 시
 
-**Example:**
+**예시:**
 ```markdown
-# Feature Name - Task Checklist
+# 기능 이름 - Task 체크리스트
 
-## Phase 1: Setup ✅ COMPLETE
-- [x] Create database schema
-- [x] Set up controllers
-- [x] Configure Sentry
+## Phase 1: 설정 ✅ 완료
+- [x] Database schema 생성
+- [x] Controllers 설정
+- [x] Sentry 설정
 
-## Phase 2: Implementation 🟡 IN PROGRESS
-- [x] Create PostController
-- [ ] Create PostService (IN PROGRESS)
-- [ ] Create PostRepository
-- [ ] Add validation with Zod
+## Phase 2: 구현 🟡 진행 중
+- [x] PostController 생성
+- [ ] PostService 생성 (진행 중)
+- [ ] PostRepository 생성
+- [ ] Zod로 검증 추가
 
-## Phase 3: Testing ⏳ NOT STARTED
-- [ ] Unit tests for service
-- [ ] Integration tests
-- [ ] Manual API testing
+## Phase 3: 테스팅 ⏳ 시작 안 함
+- [ ] Service 단위 테스트
+- [ ] 통합 테스트
+- [ ] 수동 API 테스팅
 ```
 
 ---
 
-## When to Use Dev Docs
+## Dev Docs 사용 시점
 
-**Use for:**
-- ✅ Complex multi-day tasks
-- ✅ Features with many moving parts
-- ✅ Tasks likely to span multiple sessions
-- ✅ Work that needs careful planning
-- ✅ Refactoring large systems
+**사용하는 경우:**
+- ✅ 복잡한 여러 날 작업
+- ✅ 많은 부분이 움직이는 기능
+- ✅ 여러 세션에 걸칠 가능성이 있는 작업
+- ✅ 신중한 계획이 필요한 작업
+- ✅ 대규모 시스템 리팩토링
 
-**Skip for:**
-- ❌ Simple bug fixes
-- ❌ Single-file changes
-- ❌ Quick updates
-- ❌ Trivial modifications
+**건너뛰는 경우:**
+- ❌ 간단한 버그 수정
+- ❌ 단일 파일 변경
+- ❌ 빠른 업데이트
+- ❌ 사소한 수정
 
-**Rule of thumb:** If it takes more than 2 hours or spans multiple sessions, use dev docs.
+**경험 법칙:** 2시간 이상 걸리거나 여러 세션에 걸치면 dev docs를 사용하세요.
 
 ---
 
-## Workflow with Dev Docs
+## Dev Docs를 사용한 워크플로우
 
-### Starting a New Task
+### 새 작업 시작하기
 
-1. **Use /dev-docs slash command:**
+1. **/dev-docs slash command 사용:**
    ```
    /dev-docs refactor authentication system
    ```
 
-2. **Claude creates the three files:**
-   - Analyzes requirements
-   - Examines codebase
-   - Creates comprehensive plan
-   - Generates context and tasks files
+2. **Claude가 3개의 파일 생성:**
+   - 요구사항 분석
+   - 코드베이스 검사
+   - 포괄적인 계획 생성
+   - Context 및 tasks 파일 생성
 
-3. **Review and adjust:**
-   - Check if plan makes sense
-   - Add any missing considerations
-   - Adjust timeline estimates
+3. **검토 및 조정:**
+   - 계획이 합리적인지 확인
+   - 누락된 고려사항 추가
+   - 일정 추정 조정
 
-### During Implementation
+### 구현 중
 
-1. **Refer to plan** for overall strategy
-2. **Update context.md** frequently:
-   - Mark completed work
-   - Note decisions made
-   - Add blockers
-3. **Check off tasks** in tasks.md as you complete them
+1. 전체 전략을 위해 **plan 참조**
+2. **context.md를 자주 업데이트:**
+   - 완료된 작업 표시
+   - 결정사항 기록
+   - 차단 요소 추가
+3. 작업을 완료하면 tasks.md에서 **작업 체크**
 
-### After Context Reset
+### Context 리셋 후
 
-1. **Claude reads all three files**
-2. **Understands complete state** in seconds
-3. **Resumes exactly where you left off**
+1. **Claude가 3개 파일 모두 읽기**
+2. 몇 초 만에 **완전한 상태 이해**
+3. **정확히 중단했던 곳에서 재개**
 
-No need to explain what you were doing - it's all documented!
+무엇을 하고 있었는지 설명할 필요 없음 - 모두 문서화되어 있습니다!
 
 ---
 
-## Integration with Slash Commands
+## Slash Commands와 통합
 
 ### /dev-docs
-**Creates:** New dev docs for a task
+**생성:** 작업을 위한 새 dev docs
 
-**Usage:**
+**사용법:**
 ```
 /dev-docs implement real-time notifications
 ```
 
-**Generates:**
+**생성되는 것:**
 - `dev/active/implement-real-time-notifications/`
   - implement-real-time-notifications-plan.md
   - implement-real-time-notifications-context.md
   - implement-real-time-notifications-tasks.md
 
 ### /dev-docs-update
-**Updates:** Existing dev docs before context reset
+**업데이트:** Context 리셋 전 기존 dev docs
 
-**Usage:**
+**사용법:**
 ```
 /dev-docs-update
 ```
 
-**Updates:**
-- Marks completed tasks
-- Adds new tasks discovered
-- Updates context with session progress
-- Captures current state
+**업데이트 내용:**
+- 완료된 작업 표시
+- 발견된 새 작업 추가
+- 세션 진행 상황으로 context 업데이트
+- 현재 상태 캡처
 
-**Use when:** Approaching context limits or ending session
+**사용 시점:** Context 제한에 가까워지거나 세션을 종료할 때
 
 ---
 
-## File Organization
+## 파일 구성
 
 ```
 dev/
-├── README.md              # This file
-├── active/                # Current work
+├── README.md              # 이 파일
+├── active/                # 현재 작업
 │   ├── task-1/
 │   │   ├── task-1-plan.md
 │   │   ├── task-1-context.md
 │   │   └── task-1-tasks.md
 │   └── task-2/
 │       └── ...
-└── archive/               # Completed work (optional)
+└── archive/               # 완료된 작업 (선택)
     └── old-task/
         └── ...
 ```
 
-**active/**: Work in progress
-**archive/**: Completed tasks (for reference)
+**active/**: 진행 중인 작업
+**archive/**: 완료된 작업 (참조용)
 
 ---
 
-## Example: Real Usage
+## 예시: 실제 사용
 
-See **dev/active/public-infrastructure-repo/** in this repository for a real example:
-- **plan.md** - 700+ line strategic plan for creating this showcase
-- **context.md** - Tracks what's completed, decisions made, what's next
-- **tasks.md** - Checklist of all phases and tasks
+이 repository의 **dev/active/public-infrastructure-repo/**에서 실제 예시를 확인하세요:
+- **plan.md** - 이 showcase 생성을 위한 700줄 이상의 전략적 계획
+- **context.md** - 완료된 내용, 결정사항, 다음 할 일 추적
+- **tasks.md** - 모든 단계와 작업의 체크리스트
 
-This is the actual dev docs used to build this showcase!
+이것은 이 showcase를 구축하는 데 사용된 실제 dev docs입니다!
 
 ---
 
-## Best Practices
+## 모범 사례
 
-### Update Context Frequently
+### Context를 자주 업데이트
 
-**Bad:** Update only at end of session
-**Good:** Update after each major milestone
+**나쁨:** 세션 끝에만 업데이트
+**좋음:** 각 주요 마일스톤 후에 업데이트
 
-**SESSION PROGRESS section should always reflect reality:**
+**SESSION PROGRESS 섹션은 항상 현실을 반영해야 합니다:**
 ```markdown
 ## SESSION PROGRESS (YYYY-MM-DD)
 
-### ✅ COMPLETED (list everything done)
-### 🟡 IN PROGRESS (what you're working on RIGHT NOW)
-### ⚠️ BLOCKERS (what's preventing progress)
+### ✅ 완료 (완료된 모든 것 나열)
+### 🟡 진행 중 (바로 지금 작업 중인 것)
+### ⚠️ 차단 요소 (진행을 막고 있는 것)
 ```
 
-### Make Tasks Actionable
+### 작업을 실행 가능하게 만들기
 
-**Bad:** "Fix the authentication"
-**Good:** "Implement JWT token validation in AuthMiddleware.ts (Acceptance: Tokens validated, errors to Sentry)"
+**나쁨:** "인증 수정"
+**좋음:** "AuthMiddleware.ts에서 JWT 토큰 검증 구현 (수락: 토큰 검증됨, 에러는 Sentry로)"
 
-**Include:**
-- Specific file names
-- Clear acceptance criteria
-- Dependencies on other tasks
+**포함할 내용:**
+- 구체적인 파일 이름
+- 명확한 수락 기준
+- 다른 작업에 대한 의존성
 
-### Keep Plan Current
+### 계획을 최신 상태로 유지
 
-If scope changes:
-- Update the plan
-- Add new phases
-- Adjust timeline estimates
-- Note why scope changed
-
----
-
-## For Claude Code
-
-**When user asks to create dev docs:**
-
-1. **Use the /dev-docs slash command** if available
-2. **Or create manually:**
-   - Ask about the task scope
-   - Analyze relevant codebase files
-   - Create comprehensive plan
-   - Generate context and tasks
-
-3. **Structure the plan with:**
-   - Clear phases
-   - Actionable tasks
-   - Acceptance criteria
-   - Risk assessment
-
-4. **Make context file resumable:**
-   - SESSION PROGRESS at top
-   - Quick resume instructions
-   - Key files list with explanations
-
-**When resuming from dev docs:**
-
-1. **Read all three files** (plan, context, tasks)
-2. **Start with context.md** - has current state
-3. **Check tasks.md** - see what's done and what's next
-4. **Refer to plan.md** - understand overall strategy
-
-**Update frequently:**
-- Mark tasks complete immediately
-- Update SESSION PROGRESS after significant work
-- Add new tasks as discovered
+범위가 변경되면:
+- 계획 업데이트
+- 새 단계 추가
+- 일정 추정 조정
+- 범위가 변경된 이유 기록
 
 ---
 
-## Creating Dev Docs Manually
+## Claude Code를 위해
 
-If you don't have the /dev-docs command:
+**사용자가 dev docs 생성을 요청할 때:**
 
-**1. Create directory:**
+1. **가능하면 /dev-docs slash command 사용**
+2. **또는 수동으로 생성:**
+   - 작업 범위에 대해 질문
+   - 관련 코드베이스 파일 분석
+   - 포괄적인 계획 생성
+   - Context 및 tasks 생성
+
+3. **다음을 포함하여 계획 구성:**
+   - 명확한 단계
+   - 실행 가능한 작업
+   - 수락 기준
+   - 위험 평가
+
+4. **Context 파일을 재개 가능하게 만들기:**
+   - 맨 위에 SESSION PROGRESS
+   - 빠른 재개 지침
+   - 설명이 포함된 주요 파일 목록
+
+**Dev docs에서 재개할 때:**
+
+1. **3개 파일 모두 읽기** (plan, context, tasks)
+2. **context.md부터 시작** - 현재 상태가 있음
+3. **tasks.md 확인** - 완료된 것과 다음 할 일 확인
+4. **plan.md 참조** - 전체 전략 이해
+
+**자주 업데이트:**
+- 작업 완료 즉시 표시
+- 중요한 작업 후 SESSION PROGRESS 업데이트
+- 발견된 새 작업 추가
+
+---
+
+## Dev Docs 수동 생성
+
+/dev-docs command가 없는 경우:
+
+**1. 디렉토리 생성:**
 ```bash
 mkdir -p dev/active/your-task-name
 ```
 
-**2. Create plan.md:**
-- Executive summary
-- Implementation phases
-- Detailed tasks
-- Timeline estimates
+**2. plan.md 생성:**
+- 요약
+- 구현 단계
+- 상세 작업
+- 일정 추정
 
-**3. Create context.md:**
-- SESSION PROGRESS section
-- Key files
-- Important decisions
-- Quick resume instructions
+**3. context.md 생성:**
+- SESSION PROGRESS 섹션
+- 주요 파일
+- 중요한 결정사항
+- 빠른 재개 지침
 
-**4. Create tasks.md:**
-- Phases with checkboxes
-- [ ] Task format
-- Acceptance criteria
-
----
-
-## Benefits
-
-**Before dev docs:**
-- Context reset = start over
-- Forget why decisions were made
-- Lose track of progress
-- Repeat work
-
-**After dev docs:**
-- Context reset = read 3 files, resume instantly
-- Decisions documented
-- Progress tracked
-- No repeated work
-
-**Time saved:** Hours per context reset
+**4. tasks.md 생성:**
+- 체크박스가 있는 단계
+- [ ] 작업 형식
+- 수락 기준
 
 ---
 
-## Next Steps
+## 이점
 
-1. **Try the pattern** on your next complex task
-2. **Use /dev-docs** slash command (if available)
-3. **Update frequently** - especially context.md
-4. **See it in action** - Browse dev/active/public-infrastructure-repo/
+**Dev docs 이전:**
+- Context 리셋 = 처음부터 다시 시작
+- 결정 이유를 잊어버림
+- 진행 상황을 잃어버림
+- 작업 반복
 
-**Questions?** See [CLAUDE_INTEGRATION_GUIDE.md](../CLAUDE_INTEGRATION_GUIDE.md)
+**Dev docs 이후:**
+- Context 리셋 = 3개 파일 읽고 즉시 재개
+- 결정사항 문서화됨
+- 진행 상황 추적됨
+- 반복 작업 없음
+
+**절약된 시간:** Context 리셋당 몇 시간
+
+---
+
+## 다음 단계
+
+1. 다음 복잡한 작업에서 **패턴 시도**
+2. **/dev-docs** slash command 사용 (가능한 경우)
+3. **자주 업데이트** - 특히 context.md
+4. **실제 동작 확인** - dev/active/public-infrastructure-repo/ 둘러보기
+
+**질문이 있으신가요?** [CLAUDE_INTEGRATION_GUIDE.md](../CLAUDE_INTEGRATION_GUIDE.md)를 참조하세요

@@ -1,51 +1,51 @@
 ---
-description: Create a comprehensive strategic plan with structured task breakdown
-argument-hint: Describe what you need planned (e.g., "refactor authentication system", "implement microservices")
+description: 구조화된 작업 분해와 함께 종합적인 전략 계획 생성
+argument-hint: 계획이 필요한 내용을 설명하세요 (예: "인증 시스템 리팩토링", "마이크로서비스 구현")
 ---
 
-You are an elite strategic planning specialist. Create a comprehensive, actionable plan for: $ARGUMENTS
+당신은 최고 수준의 전략 기획 전문가입니다. 다음에 대한 종합적이고 실행 가능한 계획을 작성하세요: $ARGUMENTS
 
-## Instructions
+## 지침
 
-1. **Analyze the request** and determine the scope of planning needed
-2. **Examine relevant files** in the codebase to understand current state
-3. **Create a structured plan** with:
-   - Executive Summary
-   - Current State Analysis
-   - Proposed Future State
-   - Implementation Phases (broken into sections)
-   - Detailed Tasks (actionable items with clear acceptance criteria)
-   - Risk Assessment and Mitigation Strategies
-   - Success Metrics
-   - Required Resources and Dependencies
-   - Timeline Estimates
+1. **요청 분석** 및 필요한 계획 범위 결정
+2. **관련 파일 검토**하여 현재 상태 파악
+3. **구조화된 계획 작성**:
+   - 요약
+   - 현재 상태 분석
+   - 제안하는 미래 상태
+   - 구현 단계 (섹션별 분류)
+   - 상세 작업 (명확한 완료 기준이 있는 실행 가능 항목)
+   - 위험 평가 및 완화 전략
+   - 성공 지표
+   - 필요 리소스 및 의존성
+   - 일정 추정
 
-4. **Task Breakdown Structure**: 
-   - Each major section represents a phase or component
-   - Number and prioritize tasks within sections
-   - Include clear acceptance criteria for each task
-   - Specify dependencies between tasks
-   - Estimate effort levels (S/M/L/XL)
+4. **작업 분해 구조**:
+   - 각 주요 섹션은 단계 또는 컴포넌트를 나타냄
+   - 섹션 내 작업에 번호를 매기고 우선순위 지정
+   - 각 작업에 명확한 완료 기준 포함
+   - 작업 간 의존성 명시
+   - 노력 수준 추정 (S/M/L/XL)
 
-5. **Create task management structure**:
-   - Create directory: `dev/active/[task-name]/` (relative to project root)
-   - Generate three files:
-     - `[task-name]-plan.md` - The comprehensive plan
-     - `[task-name]-context.md` - Key files, decisions, dependencies
-     - `[task-name]-tasks.md` - Checklist format for tracking progress
-   - Include "Last Updated: YYYY-MM-DD" in each file
+5. **작업 관리 구조 생성**:
+   - 디렉토리 생성: `dev/active/[task-name]/` (프로젝트 루트 기준)
+   - 세 개의 파일 생성:
+     - `[task-name]-plan.md` - 종합 계획
+     - `[task-name]-context.md` - 핵심 파일, 결정사항, 의존성
+     - `[task-name]-tasks.md` - 진행 추적용 체크리스트 형식
+   - 각 파일에 "최종 업데이트: YYYY-MM-DD" 포함
 
-## Quality Standards
-- Plans must be self-contained with all necessary context
-- Use clear, actionable language
-- Include specific technical details where relevant
-- Consider both technical and business perspectives
-- Account for potential risks and edge cases
+## 품질 기준
+- 계획은 필요한 모든 컨텍스트를 포함하여 자체적으로 완결되어야 함
+- 명확하고 실행 가능한 언어 사용
+- 관련된 경우 구체적인 기술 세부사항 포함
+- 기술적 관점과 비즈니스 관점 모두 고려
+- 잠재적 위험과 엣지 케이스 고려
 
-## Context References
-- Check `PROJECT_KNOWLEDGE.md` for architecture overview (if exists)
-- Consult `BEST_PRACTICES.md` for coding standards (if exists)
-- Reference `TROUBLESHOOTING.md` for common issues to avoid (if exists)
-- Use `dev/README.md` for task management guidelines (if exists)
+## 컨텍스트 참조
+- 아키텍처 개요는 `PROJECT_KNOWLEDGE.md` 확인 (있는 경우)
+- 코딩 표준은 `BEST_PRACTICES.md` 참조 (있는 경우)
+- 피해야 할 일반적인 문제는 `TROUBLESHOOTING.md` 참조 (있는 경우)
+- 작업 관리 가이드라인은 `dev/README.md` 사용 (있는 경우)
 
-**Note**: This command is ideal to use AFTER exiting plan mode when you have a clear vision of what needs to be done. It will create the persistent task structure that survives context resets.
+**참고**: 이 명령어는 plan mode를 종료한 후 수행할 작업에 대한 명확한 비전이 있을 때 사용하기에 이상적입니다. context 리셋 후에도 유지되는 영구적인 작업 구조를 생성합니다.

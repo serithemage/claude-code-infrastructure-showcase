@@ -1,43 +1,43 @@
 ---
 name: route-tester
-description: Test authenticated routes in the your project using cookie-based authentication. Use this skill when testing API endpoints, validating route functionality, or debugging authentication issues. Includes patterns for using test-auth-route.js and mock authentication.
+description: cookie 기반 인증을 사용하여 프로젝트에서 인증된 routes 테스트. 이 skill은 API 엔드포인트 테스트, route 기능 검증, 인증 문제 디버깅 시 사용합니다. test-auth-route.js 사용 패턴과 mock 인증을 포함합니다.
 ---
 
-# your project Route Tester Skill
+# 프로젝트 Route Tester Skill
 
-## Purpose
-This skill provides patterns for testing authenticated routes in the your project using cookie-based JWT authentication.
+## 목적
+이 skill은 cookie 기반 JWT 인증을 사용하여 프로젝트에서 인증된 routes를 테스트하기 위한 패턴을 제공합니다.
 
-## When to Use This Skill
-- Testing new API endpoints
-- Validating route functionality after changes
-- Debugging authentication issues
-- Testing POST/PUT/DELETE operations
-- Verifying request/response data
+## 이 Skill 사용 시점
+- 새 API 엔드포인트 테스트
+- 변경 후 route 기능 검증
+- 인증 문제 디버깅
+- POST/PUT/DELETE 작업 테스트
+- 요청/응답 데이터 검증
 
-## your project Authentication Overview
+## 프로젝트 인증 개요
 
-The your project uses:
-- **Keycloak** for SSO (realm: yourRealm)
-- **Cookie-based JWT** tokens (not Bearer headers)
-- **Cookie name**: `refresh_token`
-- **JWT signing**: Using secret from `config.ini`
+프로젝트에서 사용하는 것:
+- **Keycloak** SSO용 (realm: yourRealm)
+- **Cookie 기반 JWT** 토큰 (Bearer 헤더 아님)
+- **Cookie 이름**: `refresh_token`
+- **JWT 서명**: `config.ini`의 secret 사용
 
-## Testing Methods
+## 테스트 방법
 
-### Method 1: test-auth-route.js (RECOMMENDED)
+### 방법 1: test-auth-route.js (권장)
 
-The `test-auth-route.js` script handles all authentication complexity automatically.
+`test-auth-route.js` 스크립트는 모든 인증 복잡성을 자동으로 처리합니다.
 
-**Location**: `/root/git/your project_pre/scripts/test-auth-route.js`
+**위치**: `/root/git/your project_pre/scripts/test-auth-route.js`
 
-#### Basic GET Request
+#### 기본 GET 요청
 
 ```bash
 node scripts/test-auth-route.js http://localhost:3000/blog-api/api/endpoint
 ```
 
-#### POST Request with JSON Data
+#### JSON 데이터를 포함한 POST 요청
 
 ```bash
 node scripts/test-auth-route.js \
@@ -46,55 +46,55 @@ node scripts/test-auth-route.js \
     '{"responses":{"4577":"13295"},"submissionID":5,"stepInstanceId":"11"}'
 ```
 
-#### What the Script Does
+#### 스크립트가 하는 일
 
-1. Gets a refresh token from Keycloak
-   - Username: `testuser`
-   - Password: `testpassword`
-2. Signs the token with JWT secret from `config.ini`
-3. Creates cookie header: `refresh_token=<signed-token>`
-4. Makes the authenticated request
-5. Shows the exact curl command to reproduce manually
+1. Keycloak에서 refresh token 가져오기
+   - 사용자명: `testuser`
+   - 비밀번호: `testpassword`
+2. `config.ini`의 JWT secret으로 토큰 서명
+3. cookie 헤더 생성: `refresh_token=<signed-token>`
+4. 인증된 요청 수행
+5. 수동으로 재현할 수 있는 정확한 curl 명령어 표시
 
-#### Script Output
+#### 스크립트 출력
 
-The script outputs:
-- The request details
-- The response status and body
-- A curl command for manual reproduction
+스크립트가 출력하는 것:
+- 요청 세부 정보
+- 응답 상태와 본문
+- 수동 재현을 위한 curl 명령어
 
-**Note**: The script is verbose - look for the actual response in the output.
+**참고**: 스크립트가 상세하므로 출력에서 실제 응답을 찾으세요.
 
-### Method 2: Manual curl with Token
+### 방법 2: 토큰을 사용한 수동 curl
 
-Use the curl command from the test-auth-route.js output:
+test-auth-route.js 출력의 curl 명령어 사용:
 
 ```bash
-# The script outputs something like:
-# 💡 To test manually with curl:
+# 스크립트가 다음과 같이 출력합니다:
+# 💡 curl로 수동 테스트하려면:
 # curl -b "refresh_token=eyJhbGci..." http://localhost:3000/blog-api/api/endpoint
 
-# Copy and modify that curl command:
+# 해당 curl 명령어를 복사하고 수정:
 curl -X POST http://localhost:3000/blog-api/777/submit \
   -H "Content-Type: application/json" \
-  -b "refresh_token=<COPY_TOKEN_FROM_SCRIPT_OUTPUT>" \
+  -b "refresh_token=<스크립트_출력에서_토큰_복사>" \
   -d '{"your": "data"}'
 ```
 
-### Method 3: Mock Authentication (Development Only - EASIEST)
+### 방법 3: Mock 인증 (개발 환경만 - 가장 쉬움)
 
-For development, bypass Keycloak entirely using mock auth.
+개발 환경에서 mock auth를 사용하여 Keycloak을 완전히 우회합니다.
 
-#### Setup
+#### 설정
 
 ```bash
-# Add to service .env file (e.g., blog-api/.env)
+# 서비스 .env 파일에 추가 (예: blog-api/.env)
 MOCK_AUTH=true
 MOCK_USER_ID=test-user
 MOCK_USER_ROLES=admin,operations
 ```
 
-#### Usage
+#### 사용법
 
 ```bash
 curl -H "X-Mock-Auth: true" \
@@ -103,16 +103,16 @@ curl -H "X-Mock-Auth: true" \
      http://localhost:3002/api/protected
 ```
 
-#### Mock Auth Requirements
+#### Mock Auth 요구 사항
 
-Mock auth ONLY works when:
-- `NODE_ENV` is `development` or `test`
-- The `mockAuth` middleware is added to the route
-- Will NEVER work in production (security feature)
+Mock auth는 다음 경우에만 작동합니다:
+- `NODE_ENV`가 `development` 또는 `test`
+- `mockAuth` middleware가 route에 추가됨
+- 프로덕션에서는 절대 작동하지 않음 (보안 기능)
 
-## Common Testing Patterns
+## 일반적인 테스트 패턴
 
-### Test Form Submission
+### Form Submission 테스트
 
 ```bash
 node scripts/test-auth-route.js \
@@ -121,7 +121,7 @@ node scripts/test-auth-route.js \
     '{"responses":{"4577":"13295"},"submissionID":5,"stepInstanceId":"11"}'
 ```
 
-### Test Workflow Start
+### Workflow 시작 테스트
 
 ```bash
 node scripts/test-auth-route.js \
@@ -130,7 +130,7 @@ node scripts/test-auth-route.js \
     '{"workflowCode":"DHS_CLOSEOUT","entityType":"Submission","entityID":123}'
 ```
 
-### Test Workflow Step Completion
+### Workflow Step 완료 테스트
 
 ```bash
 node scripts/test-auth-route.js \
@@ -139,17 +139,17 @@ node scripts/test-auth-route.js \
     '{"stepInstanceID":789,"answers":{"decision":"approved","comments":"Looks good"}}'
 ```
 
-### Test GET with Query Parameters
+### Query Parameters가 있는 GET 테스트
 
 ```bash
 node scripts/test-auth-route.js \
     "http://localhost:3002/api/workflows?status=active&limit=10"
 ```
 
-### Test File Upload
+### 파일 업로드 테스트
 
 ```bash
-# Get token from test-auth-route.js first, then:
+# 먼저 test-auth-route.js에서 토큰을 가져온 후:
 curl -X POST http://localhost:5000/upload \
   -H "Content-Type: multipart/form-data" \
   -b "refresh_token=<TOKEN>" \
@@ -157,19 +157,19 @@ curl -X POST http://localhost:5000/upload \
   -F "metadata={\"description\":\"Test file\"}"
 ```
 
-## Hardcoded Test Credentials
+## 하드코딩된 테스트 자격 증명
 
-The `test-auth-route.js` script uses these credentials:
+`test-auth-route.js` 스크립트가 사용하는 자격 증명:
 
-- **Username**: `testuser`
-- **Password**: `testpassword`
-- **Keycloak URL**: From `config.ini` (usually `http://localhost:8081`)
+- **사용자명**: `testuser`
+- **비밀번호**: `testpassword`
+- **Keycloak URL**: `config.ini`에서 (보통 `http://localhost:8081`)
 - **Realm**: `yourRealm`
-- **Client ID**: From `config.ini`
+- **Client ID**: `config.ini`에서
 
-## Service Ports
+## 서비스 포트
 
-| Service | Port | Base URL |
+| 서비스 | 포트 | Base URL |
 |---------|------|----------|
 | Users   | 3000 | http://localhost:3000 |
 | Projects| 3001 | http://localhost:3001 |
@@ -177,83 +177,83 @@ The `test-auth-route.js` script uses these credentials:
 | Email   | 3003 | http://localhost:3003 |
 | Uploads | 5000 | http://localhost:5000 |
 
-## Route Prefixes
+## Route 접두사
 
-Check `/src/app.ts` in each service for route prefixes:
+각 서비스의 `/src/app.ts`에서 route 접두사 확인:
 
 ```typescript
-// Example from blog-api/src/app.ts
-app.use('/blog-api/api', formRoutes);          // Prefix: /blog-api/api
-app.use('/api/workflow', workflowRoutes);  // Prefix: /api/workflow
+// blog-api/src/app.ts 예시
+app.use('/blog-api/api', formRoutes);          // 접두사: /blog-api/api
+app.use('/api/workflow', workflowRoutes);  // 접두사: /api/workflow
 ```
 
-**Full Route** = Base URL + Prefix + Route Path
+**전체 Route** = Base URL + 접두사 + Route 경로
 
-Example:
+예시:
 - Base: `http://localhost:3002`
-- Prefix: `/form`
+- 접두사: `/form`
 - Route: `/777/submit`
-- **Full URL**: `http://localhost:3000/blog-api/777/submit`
+- **전체 URL**: `http://localhost:3000/blog-api/777/submit`
 
-## Testing Checklist
+## 테스트 체크리스트
 
-Before testing a route:
+Route 테스트 전:
 
-- [ ] Identify the service (form, email, users, etc.)
-- [ ] Find the correct port
-- [ ] Check route prefixes in `app.ts`
-- [ ] Construct the full URL
-- [ ] Prepare request body (if POST/PUT)
-- [ ] Determine authentication method
-- [ ] Run the test
-- [ ] Verify response status and data
-- [ ] Check database changes if applicable
+- [ ] 서비스 식별 (form, email, users 등)
+- [ ] 올바른 포트 찾기
+- [ ] `app.ts`에서 route 접두사 확인
+- [ ] 전체 URL 구성
+- [ ] 요청 본문 준비 (POST/PUT인 경우)
+- [ ] 인증 방법 결정
+- [ ] 테스트 실행
+- [ ] 응답 상태와 데이터 검증
+- [ ] 해당되는 경우 데이터베이스 변경 확인
 
-## Verifying Database Changes
+## 데이터베이스 변경 검증
 
-After testing routes that modify data:
+데이터를 수정하는 routes 테스트 후:
 
 ```bash
-# Connect to MySQL
+# MySQL에 연결
 docker exec -i local-mysql mysql -u root -ppassword1 blog_dev
 
-# Check specific table
+# 특정 테이블 확인
 mysql> SELECT * FROM WorkflowInstance WHERE id = 123;
 mysql> SELECT * FROM WorkflowStepInstance WHERE instanceId = 123;
 mysql> SELECT * FROM WorkflowNotification WHERE recipientUserId = 'user-123';
 ```
 
-## Debugging Failed Tests
+## 실패한 테스트 디버깅
 
 ### 401 Unauthorized
 
-**Possible causes**:
-1. Token expired (regenerate with test-auth-route.js)
-2. Incorrect cookie format
-3. JWT secret mismatch
-4. Keycloak not running
+**가능한 원인**:
+1. 토큰 만료됨 (test-auth-route.js로 재생성)
+2. 잘못된 cookie 형식
+3. JWT secret 불일치
+4. Keycloak이 실행 중이 아님
 
-**Solutions**:
+**해결책**:
 ```bash
-# Check Keycloak is running
+# Keycloak이 실행 중인지 확인
 docker ps | grep keycloak
 
-# Regenerate token
+# 토큰 재생성
 node scripts/test-auth-route.js http://localhost:3002/api/health
 
-# Verify config.ini has correct jwtSecret
+# config.ini에 올바른 jwtSecret이 있는지 확인
 ```
 
 ### 403 Forbidden
 
-**Possible causes**:
-1. User lacks required role
-2. Resource permissions incorrect
-3. Route requires specific permissions
+**가능한 원인**:
+1. 사용자에게 필요한 역할이 없음
+2. 리소스 권한이 잘못됨
+3. Route에 특정 권한 필요
 
-**Solutions**:
+**해결책**:
 ```bash
-# Use mock auth with admin role
+# admin 역할로 mock auth 사용
 curl -H "X-Mock-Auth: true" \
      -H "X-Mock-User: test-admin" \
      -H "X-Mock-Roles: admin" \
@@ -262,95 +262,95 @@ curl -H "X-Mock-Auth: true" \
 
 ### 404 Not Found
 
-**Possible causes**:
-1. Incorrect URL
-2. Missing route prefix
-3. Route not registered
+**가능한 원인**:
+1. 잘못된 URL
+2. 누락된 route 접두사
+3. Route가 등록되지 않음
 
-**Solutions**:
-1. Check `app.ts` for route prefixes
-2. Verify route registration
-3. Check service is running (`pm2 list`)
+**해결책**:
+1. `app.ts`에서 route 접두사 확인
+2. Route 등록 확인
+3. 서비스가 실행 중인지 확인 (`pm2 list`)
 
 ### 500 Internal Server Error
 
-**Possible causes**:
-1. Database connection issue
-2. Missing required fields
-3. Validation error
-4. Application error
+**가능한 원인**:
+1. 데이터베이스 연결 문제
+2. 필수 필드 누락
+3. 검증 오류
+4. 애플리케이션 오류
 
-**Solutions**:
-1. Check service logs (`pm2 logs <service>`)
-2. Check Sentry for error details
-3. Verify request body matches expected schema
-4. Check database connectivity
+**해결책**:
+1. 서비스 로그 확인 (`pm2 logs <service>`)
+2. Sentry에서 오류 세부 정보 확인
+3. 요청 본문이 예상 스키마와 일치하는지 확인
+4. 데이터베이스 연결 확인
 
-## Using auth-route-tester Agent
+## auth-route-tester Agent 사용
 
-For comprehensive route testing after making changes:
+변경 후 종합적인 route 테스트를 위해:
 
-1. **Identify affected routes**
-2. **Gather route information**:
-   - Full route path (with prefix)
-   - Expected POST data
-   - Tables to verify
-3. **Invoke auth-route-tester agent**
+1. **영향받는 routes 식별**
+2. **Route 정보 수집**:
+   - 전체 route 경로 (접두사 포함)
+   - 예상 POST 데이터
+   - 검증할 테이블
+3. **auth-route-tester agent 호출**
 
-The agent will:
-- Test the route with proper authentication
-- Verify database changes
-- Check response format
-- Report any issues
+Agent가 수행하는 것:
+- 적절한 인증으로 route 테스트
+- 데이터베이스 변경 검증
+- 응답 형식 확인
+- 문제 보고
 
-## Example Test Scenarios
+## 예시 테스트 시나리오
 
-### After Creating a New Route
+### 새 Route 생성 후
 
 ```bash
-# 1. Test with valid data
+# 1. 유효한 데이터로 테스트
 node scripts/test-auth-route.js \
     http://localhost:3002/api/my-new-route \
     POST \
     '{"field1":"value1","field2":"value2"}'
 
-# 2. Verify database
+# 2. 데이터베이스 검증
 docker exec -i local-mysql mysql -u root -ppassword1 blog_dev \
     -e "SELECT * FROM MyTable ORDER BY createdAt DESC LIMIT 1;"
 
-# 3. Test with invalid data
+# 3. 유효하지 않은 데이터로 테스트
 node scripts/test-auth-route.js \
     http://localhost:3002/api/my-new-route \
     POST \
     '{"field1":"invalid"}'
 
-# 4. Test without authentication
+# 4. 인증 없이 테스트
 curl http://localhost:3002/api/my-new-route
-# Should return 401
+# 401을 반환해야 함
 ```
 
-### After Modifying a Route
+### Route 수정 후
 
 ```bash
-# 1. Test existing functionality still works
+# 1. 기존 기능이 여전히 작동하는지 테스트
 node scripts/test-auth-route.js \
     http://localhost:3002/api/existing-route \
     POST \
     '{"existing":"data"}'
 
-# 2. Test new functionality
+# 2. 새 기능 테스트
 node scripts/test-auth-route.js \
     http://localhost:3002/api/existing-route \
     POST \
     '{"new":"field","existing":"data"}'
 
-# 3. Verify backward compatibility
-# Test with old request format (if applicable)
+# 3. 하위 호환성 검증
+# 이전 요청 형식으로 테스트 (해당되는 경우)
 ```
 
-## Configuration Files
+## 설정 파일
 
-### config.ini (each service)
+### config.ini (각 서비스)
 
 ```ini
 [keycloak]
@@ -362,27 +362,27 @@ clientId = app-client
 jwtSecret = your-jwt-secret-here
 ```
 
-### .env (each service)
+### .env (각 서비스)
 
 ```bash
 NODE_ENV=development
-MOCK_AUTH=true           # Optional: Enable mock auth
-MOCK_USER_ID=test-user   # Optional: Default mock user
-MOCK_USER_ROLES=admin    # Optional: Default mock roles
+MOCK_AUTH=true           # 선택: mock auth 활성화
+MOCK_USER_ID=test-user   # 선택: 기본 mock 사용자
+MOCK_USER_ROLES=admin    # 선택: 기본 mock 역할
 ```
 
-## Key Files
+## 핵심 파일
 
-- `/root/git/your project_pre/scripts/test-auth-route.js` - Main testing script
+- `/root/git/your project_pre/scripts/test-auth-route.js` - 메인 테스트 스크립트
 - `/blog-api/src/app.ts` - Form service routes
 - `/notifications/src/app.ts` - Email service routes
 - `/auth/src/app.ts` - Users service routes
-- `/config.ini` - Service configuration
-- `/.env` - Environment variables
+- `/config.ini` - 서비스 설정
+- `/.env` - 환경 변수
 
-## Related Skills
+## 관련 Skills
 
-- Use **database-verification** to verify database changes
-- Use **error-tracking** to check for captured errors
-- Use **workflow-builder** for workflow route testing
-- Use **notification-sender** to verify notifications sent
+- 데이터베이스 변경 검증에 **database-verification** 사용
+- 캡처된 오류 확인에 **error-tracking** 사용
+- Workflow route 테스트에 **workflow-builder** 사용
+- 알림 전송 확인에 **notification-sender** 사용

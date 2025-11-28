@@ -1,73 +1,73 @@
 ---
 name: frontend-dev-guidelines
-description: Frontend development guidelines for React/TypeScript applications. Modern patterns including Suspense, lazy loading, useSuspenseQuery, file organization with features directory, MUI v7 styling, TanStack Router, performance optimization, and TypeScript best practices. Use when creating components, pages, features, fetching data, styling, routing, or working with frontend code.
+description: React/TypeScript 애플리케이션을 위한 프론트엔드 개발 가이드라인. Suspense, lazy loading, useSuspenseQuery, features 디렉토리를 사용한 파일 구성, MUI v7 styling, TanStack Router, 성능 최적화, TypeScript 모범 사례를 포함한 최신 패턴. 컴포넌트, 페이지, 기능 생성, 데이터 fetching, styling, routing 또는 프론트엔드 코드 작업 시 사용.
 ---
 
-# Frontend Development Guidelines
+# 프론트엔드 개발 가이드라인
 
-## Purpose
+## 목적
 
-Comprehensive guide for modern React development, emphasizing Suspense-based data fetching, lazy loading, proper file organization, and performance optimization.
+Suspense 기반 데이터 fetching, lazy loading, 적절한 파일 구성, 성능 최적화를 강조하는 최신 React 개발을 위한 종합 가이드입니다.
 
-## When to Use This Skill
+## 이 Skill 사용 시점
 
-- Creating new components or pages
-- Building new features
-- Fetching data with TanStack Query
-- Setting up routing with TanStack Router
-- Styling components with MUI v7
-- Performance optimization
-- Organizing frontend code
-- TypeScript best practices
+- 새 컴포넌트 또는 페이지 생성
+- 새 기능 구축
+- TanStack Query로 데이터 fetching
+- TanStack Router로 routing 설정
+- MUI v7로 컴포넌트 styling
+- 성능 최적화
+- 프론트엔드 코드 구성
+- TypeScript 모범 사례
 
 ---
 
-## Quick Start
+## 빠른 시작
 
-### New Component Checklist
+### 새 컴포넌트 체크리스트
 
-Creating a component? Follow this checklist:
+컴포넌트를 만드시나요? 이 체크리스트를 따르세요:
 
-- [ ] Use `React.FC<Props>` pattern with TypeScript
-- [ ] Lazy load if heavy component: `React.lazy(() => import())`
-- [ ] Wrap in `<SuspenseLoader>` for loading states
-- [ ] Use `useSuspenseQuery` for data fetching
+- [ ] TypeScript와 함께 `React.FC<Props>` 패턴 사용
+- [ ] 무거운 컴포넌트인 경우 Lazy load: `React.lazy(() => import())`
+- [ ] Loading 상태를 위해 `<SuspenseLoader>`로 래핑
+- [ ] 데이터 fetching에 `useSuspenseQuery` 사용
 - [ ] Import aliases: `@/`, `~types`, `~components`, `~features`
-- [ ] Styles: Inline if <100 lines, separate file if >100 lines
-- [ ] Use `useCallback` for event handlers passed to children
-- [ ] Default export at bottom
-- [ ] No early returns with loading spinners
-- [ ] Use `useMuiSnackbar` for user notifications
+- [ ] 스타일: 100줄 미만이면 인라인, 100줄 초과면 별도 파일
+- [ ] 자식에게 전달되는 이벤트 핸들러에 `useCallback` 사용
+- [ ] 하단에 default export
+- [ ] Loading 스피너를 사용한 early return 금지
+- [ ] 사용자 알림에 `useMuiSnackbar` 사용
 
-### New Feature Checklist
+### 새 기능 체크리스트
 
-Creating a feature? Set up this structure:
+기능을 만드시나요? 이 구조를 설정하세요:
 
-- [ ] Create `features/{feature-name}/` directory
-- [ ] Create subdirectories: `api/`, `components/`, `hooks/`, `helpers/`, `types/`
-- [ ] Create API service file: `api/{feature}Api.ts`
-- [ ] Set up TypeScript types in `types/`
-- [ ] Create route in `routes/{feature-name}/index.tsx`
-- [ ] Lazy load feature components
-- [ ] Use Suspense boundaries
-- [ ] Export public API from feature `index.ts`
+- [ ] `features/{feature-name}/` 디렉토리 생성
+- [ ] 하위 디렉토리 생성: `api/`, `components/`, `hooks/`, `helpers/`, `types/`
+- [ ] API service 파일 생성: `api/{feature}Api.ts`
+- [ ] `types/`에 TypeScript 타입 설정
+- [ ] `routes/{feature-name}/index.tsx`에 route 생성
+- [ ] 기능 컴포넌트 Lazy load
+- [ ] Suspense boundaries 사용
+- [ ] 기능 `index.ts`에서 public API export
 
 ---
 
-## Import Aliases Quick Reference
+## Import Aliases 빠른 참조
 
-| Alias | Resolves To | Example |
+| Alias | 해석 | 예시 |
 |-------|-------------|---------|
 | `@/` | `src/` | `import { apiClient } from '@/lib/apiClient'` |
 | `~types` | `src/types` | `import type { User } from '~types/user'` |
 | `~components` | `src/components` | `import { SuspenseLoader } from '~components/SuspenseLoader'` |
 | `~features` | `src/features` | `import { authApi } from '~features/auth'` |
 
-Defined in: [vite.config.ts](../../vite.config.ts) lines 180-185
+정의 위치: [vite.config.ts](../../vite.config.ts) 180-185줄
 
 ---
 
-## Common Imports Cheatsheet
+## 공통 Imports 치트시트
 
 ```typescript
 // React & Lazy Loading
@@ -97,95 +97,95 @@ import type { Post } from '~types/post';
 
 ---
 
-## Topic Guides
+## 주제 가이드
 
-### 🎨 Component Patterns
+### 🎨 컴포넌트 패턴
 
-**Modern React components use:**
-- `React.FC<Props>` for type safety
-- `React.lazy()` for code splitting
-- `SuspenseLoader` for loading states
-- Named const + default export pattern
+**최신 React 컴포넌트 사용:**
+- 타입 안전성을 위한 `React.FC<Props>`
+- 코드 분할을 위한 `React.lazy()`
+- Loading 상태를 위한 `SuspenseLoader`
+- Named const + default export 패턴
 
-**Key Concepts:**
-- Lazy load heavy components (DataGrid, charts, editors)
-- Always wrap lazy components in Suspense
-- Use SuspenseLoader component (with fade animation)
-- Component structure: Props → Hooks → Handlers → Render → Export
+**핵심 개념:**
+- 무거운 컴포넌트 Lazy load (DataGrid, 차트, 에디터)
+- Lazy 컴포넌트는 항상 Suspense로 래핑
+- SuspenseLoader 컴포넌트 사용 (fade 애니메이션 포함)
+- 컴포넌트 구조: Props → Hooks → Handlers → Render → Export
 
-**[📖 Complete Guide: resources/component-patterns.md](resources/component-patterns.md)**
-
----
-
-### 📊 Data Fetching
-
-**PRIMARY PATTERN: useSuspenseQuery**
-- Use with Suspense boundaries
-- Cache-first strategy (check grid cache before API)
-- Replaces `isLoading` checks
-- Type-safe with generics
-
-**API Service Layer:**
-- Create `features/{feature}/api/{feature}Api.ts`
-- Use `apiClient` axios instance
-- Centralized methods per feature
-- Route format: `/form/route` (NOT `/api/form/route`)
-
-**[📖 Complete Guide: resources/data-fetching.md](resources/data-fetching.md)**
+**[📖 전체 가이드: resources/component-patterns.md](resources/component-patterns.md)**
 
 ---
 
-### 📁 File Organization
+### 📊 데이터 Fetching
+
+**기본 패턴: useSuspenseQuery**
+- Suspense boundaries와 함께 사용
+- Cache-first 전략 (API 전에 grid 캐시 확인)
+- `isLoading` 체크 대체
+- 제네릭으로 타입 안전
+
+**API Service 레이어:**
+- `features/{feature}/api/{feature}Api.ts` 생성
+- `apiClient` axios 인스턴스 사용
+- 기능별 중앙화된 메서드
+- Route 형식: `/form/route` (`/api/form/route` 아님)
+
+**[📖 전체 가이드: resources/data-fetching.md](resources/data-fetching.md)**
+
+---
+
+### 📁 파일 구성
 
 **features/ vs components/:**
-- `features/`: Domain-specific (posts, comments, auth)
-- `components/`: Truly reusable (SuspenseLoader, CustomAppBar)
+- `features/`: 도메인 특화 (posts, comments, auth)
+- `components/`: 진정으로 재사용 가능한 것 (SuspenseLoader, CustomAppBar)
 
-**Feature Subdirectories:**
+**Feature 하위 디렉토리:**
 ```
 features/
   my-feature/
-    api/          # API service layer
-    components/   # Feature components
+    api/          # API service 레이어
+    components/   # 기능 컴포넌트
     hooks/        # Custom hooks
-    helpers/      # Utility functions
-    types/        # TypeScript types
+    helpers/      # 유틸리티 함수
+    types/        # TypeScript 타입
 ```
 
-**[📖 Complete Guide: resources/file-organization.md](resources/file-organization.md)**
+**[📖 전체 가이드: resources/file-organization.md](resources/file-organization.md)**
 
 ---
 
 ### 🎨 Styling
 
-**Inline vs Separate:**
-- <100 lines: Inline `const styles: Record<string, SxProps<Theme>>`
-- >100 lines: Separate `.styles.ts` file
+**인라인 vs 분리:**
+- 100줄 미만: 인라인 `const styles: Record<string, SxProps<Theme>>`
+- 100줄 초과: 별도 `.styles.ts` 파일
 
-**Primary Method:**
-- Use `sx` prop for MUI components
-- Type-safe with `SxProps<Theme>`
-- Theme access: `(theme) => theme.palette.primary.main`
+**기본 방법:**
+- MUI 컴포넌트에 `sx` prop 사용
+- `SxProps<Theme>`로 타입 안전
+- Theme 접근: `(theme) => theme.palette.primary.main`
 
 **MUI v7 Grid:**
 ```typescript
-<Grid size={{ xs: 12, md: 6 }}>  // ✅ v7 syntax
-<Grid xs={12} md={6}>             // ❌ Old syntax
+<Grid size={{ xs: 12, md: 6 }}>  // ✅ v7 문법
+<Grid xs={12} md={6}>             // ❌ 이전 문법
 ```
 
-**[📖 Complete Guide: resources/styling-guide.md](resources/styling-guide.md)**
+**[📖 전체 가이드: resources/styling-guide.md](resources/styling-guide.md)**
 
 ---
 
 ### 🛣️ Routing
 
-**TanStack Router - Folder-Based:**
-- Directory: `routes/my-route/index.tsx`
-- Lazy load components
-- Use `createFileRoute`
-- Breadcrumb data in loader
+**TanStack Router - 폴더 기반:**
+- 디렉토리: `routes/my-route/index.tsx`
+- 컴포넌트 Lazy load
+- `createFileRoute` 사용
+- Loader에 Breadcrumb 데이터
 
-**Example:**
+**예시:**
 ```typescript
 import { createFileRoute } from '@tanstack/react-router';
 import { lazy } from 'react';
@@ -198,120 +198,120 @@ export const Route = createFileRoute('/my-route/')({
 });
 ```
 
-**[📖 Complete Guide: resources/routing-guide.md](resources/routing-guide.md)**
+**[📖 전체 가이드: resources/routing-guide.md](resources/routing-guide.md)**
 
 ---
 
-### ⏳ Loading & Error States
+### ⏳ Loading & Error 상태
 
-**CRITICAL RULE: No Early Returns**
+**핵심 규칙: Early Return 금지**
 
 ```typescript
-// ❌ NEVER - Causes layout shift
+// ❌ 절대 안 됨 - 레이아웃 시프트 유발
 if (isLoading) {
     return <LoadingSpinner />;
 }
 
-// ✅ ALWAYS - Consistent layout
+// ✅ 항상 - 일관된 레이아웃
 <SuspenseLoader>
     <Content />
 </SuspenseLoader>
 ```
 
-**Why:** Prevents Cumulative Layout Shift (CLS), better UX
+**이유:** Cumulative Layout Shift (CLS) 방지, 더 나은 UX
 
 **Error Handling:**
-- Use `useMuiSnackbar` for user feedback
-- NEVER `react-toastify`
-- TanStack Query `onError` callbacks
+- 사용자 피드백에 `useMuiSnackbar` 사용
+- `react-toastify` 절대 사용 금지
+- TanStack Query `onError` 콜백
 
-**[📖 Complete Guide: resources/loading-and-error-states.md](resources/loading-and-error-states.md)**
+**[📖 전체 가이드: resources/loading-and-error-states.md](resources/loading-and-error-states.md)**
 
 ---
 
-### ⚡ Performance
+### ⚡ 성능
 
-**Optimization Patterns:**
-- `useMemo`: Expensive computations (filter, sort, map)
-- `useCallback`: Event handlers passed to children
-- `React.memo`: Expensive components
-- Debounced search (300-500ms)
-- Memory leak prevention (cleanup in useEffect)
+**최적화 패턴:**
+- `useMemo`: 비용이 큰 계산 (filter, sort, map)
+- `useCallback`: 자식에게 전달되는 이벤트 핸들러
+- `React.memo`: 비용이 큰 컴포넌트
+- Debounced 검색 (300-500ms)
+- 메모리 누수 방지 (useEffect에서 cleanup)
 
-**[📖 Complete Guide: resources/performance.md](resources/performance.md)**
+**[📖 전체 가이드: resources/performance.md](resources/performance.md)**
 
 ---
 
 ### 📘 TypeScript
 
-**Standards:**
-- Strict mode, no `any` type
-- Explicit return types on functions
+**표준:**
+- Strict 모드, `any` 타입 금지
+- 함수에 명시적 반환 타입
 - Type imports: `import type { User } from '~types/user'`
-- Component prop interfaces with JSDoc
+- JSDoc이 포함된 컴포넌트 prop 인터페이스
 
-**[📖 Complete Guide: resources/typescript-standards.md](resources/typescript-standards.md)**
-
----
-
-### 🔧 Common Patterns
-
-**Covered Topics:**
-- React Hook Form with Zod validation
-- DataGrid wrapper contracts
-- Dialog component standards
-- `useAuth` hook for current user
-- Mutation patterns with cache invalidation
-
-**[📖 Complete Guide: resources/common-patterns.md](resources/common-patterns.md)**
+**[📖 전체 가이드: resources/typescript-standards.md](resources/typescript-standards.md)**
 
 ---
 
-### 📚 Complete Examples
+### 🔧 공통 패턴
 
-**Full working examples:**
-- Modern component with all patterns
-- Complete feature structure
-- API service layer
-- Route with lazy loading
+**다루는 주제:**
+- Zod 검증과 React Hook Form
+- DataGrid wrapper 계약
+- Dialog 컴포넌트 표준
+- 현재 사용자를 위한 `useAuth` hook
+- 캐시 무효화를 포함한 Mutation 패턴
+
+**[📖 전체 가이드: resources/common-patterns.md](resources/common-patterns.md)**
+
+---
+
+### 📚 전체 예시
+
+**작동하는 전체 예시:**
+- 모든 패턴이 포함된 최신 컴포넌트
+- 완전한 기능 구조
+- API service 레이어
+- Lazy loading이 포함된 Route
 - Suspense + useSuspenseQuery
-- Form with validation
+- 검증이 포함된 Form
 
-**[📖 Complete Guide: resources/complete-examples.md](resources/complete-examples.md)**
+**[📖 전체 가이드: resources/complete-examples.md](resources/complete-examples.md)**
 
 ---
 
-## Navigation Guide
+## 네비게이션 가이드
 
-| Need to... | Read this resource |
+| 필요한 작업... | 읽어야 할 리소스 |
 |------------|-------------------|
-| Create a component | [component-patterns.md](resources/component-patterns.md) |
-| Fetch data | [data-fetching.md](resources/data-fetching.md) |
-| Organize files/folders | [file-organization.md](resources/file-organization.md) |
-| Style components | [styling-guide.md](resources/styling-guide.md) |
-| Set up routing | [routing-guide.md](resources/routing-guide.md) |
-| Handle loading/errors | [loading-and-error-states.md](resources/loading-and-error-states.md) |
-| Optimize performance | [performance.md](resources/performance.md) |
-| TypeScript types | [typescript-standards.md](resources/typescript-standards.md) |
+| 컴포넌트 생성 | [component-patterns.md](resources/component-patterns.md) |
+| 데이터 fetch | [data-fetching.md](resources/data-fetching.md) |
+| 파일/폴더 구성 | [file-organization.md](resources/file-organization.md) |
+| 컴포넌트 스타일링 | [styling-guide.md](resources/styling-guide.md) |
+| Routing 설정 | [routing-guide.md](resources/routing-guide.md) |
+| Loading/errors 처리 | [loading-and-error-states.md](resources/loading-and-error-states.md) |
+| 성능 최적화 | [performance.md](resources/performance.md) |
+| TypeScript 타입 | [typescript-standards.md](resources/typescript-standards.md) |
 | Forms/Auth/DataGrid | [common-patterns.md](resources/common-patterns.md) |
-| See full examples | [complete-examples.md](resources/complete-examples.md) |
+| 전체 예시 보기 | [complete-examples.md](resources/complete-examples.md) |
 
 ---
 
-## Core Principles
+## 핵심 원칙
 
-1. **Lazy Load Everything Heavy**: Routes, DataGrid, charts, editors
-2. **Suspense for Loading**: Use SuspenseLoader, not early returns
-3. **useSuspenseQuery**: Primary data fetching pattern for new code
-4. **Features are Organized**: api/, components/, hooks/, helpers/ subdirs
-5. **Styles Based on Size**: <100 inline, >100 separate
-6. **Import Aliases**: Use @/, ~types, ~components, ~features
-7. **No Early Returns**: Prevents layout shift
-8. **useMuiSnackbar**: For all user notifications
+1. **무거운 것은 모두 Lazy Load**: Routes, DataGrid, 차트, 에디터
+2. **Loading에 Suspense**: early return 대신 SuspenseLoader 사용
+3. **useSuspenseQuery**: 새 코드의 기본 데이터 fetching 패턴
+4. **기능은 정리됨**: api/, components/, hooks/, helpers/ 하위 디렉토리
+5. **크기에 따른 스타일**: 100줄 미만 인라인, 100줄 초과 분리
+6. **Import Aliases**: @/, ~types, ~components, ~features 사용
+7. **Early Return 금지**: 레이아웃 시프트 방지
+8. **useMuiSnackbar**: 모든 사용자 알림에 사용
 
 ---
 
-## Quick Reference: File Structure
+## 빠른 참조: 파일 구조
 
 ```
 src/
@@ -320,33 +320,33 @@ src/
       api/
         myFeatureApi.ts       # API service
       components/
-        MyFeature.tsx         # Main component
-        SubComponent.tsx      # Related components
+        MyFeature.tsx         # 메인 컴포넌트
+        SubComponent.tsx      # 관련 컴포넌트
       hooks/
         useMyFeature.ts       # Custom hooks
         useSuspenseMyFeature.ts  # Suspense hooks
       helpers/
-        myFeatureHelpers.ts   # Utilities
+        myFeatureHelpers.ts   # 유틸리티
       types/
-        index.ts              # TypeScript types
+        index.ts              # TypeScript 타입
       index.ts                # Public exports
 
   components/
     SuspenseLoader/
-      SuspenseLoader.tsx      # Reusable loader
+      SuspenseLoader.tsx      # 재사용 가능한 loader
     CustomAppBar/
-      CustomAppBar.tsx        # Reusable app bar
+      CustomAppBar.tsx        # 재사용 가능한 app bar
 
   routes/
     my-route/
-      index.tsx               # Route component
+      index.tsx               # Route 컴포넌트
       create/
-        index.tsx             # Nested route
+        index.tsx             # 중첩 route
 ```
 
 ---
 
-## Modern Component Template (Quick Copy)
+## 최신 컴포넌트 템플릿 (빠른 복사)
 
 ```typescript
 import React, { useState, useCallback } from 'react';
@@ -385,15 +385,15 @@ export const MyComponent: React.FC<MyComponentProps> = ({ id, onAction }) => {
 export default MyComponent;
 ```
 
-For complete examples, see [resources/complete-examples.md](resources/complete-examples.md)
+전체 예시는 [resources/complete-examples.md](resources/complete-examples.md)를 참조하세요
 
 ---
 
-## Related Skills
+## 관련 Skills
 
-- **error-tracking**: Error tracking with Sentry (applies to frontend too)
-- **backend-dev-guidelines**: Backend API patterns that frontend consumes
+- **error-tracking**: Sentry를 사용한 error tracking (프론트엔드에도 적용)
+- **backend-dev-guidelines**: 프론트엔드가 소비하는 백엔드 API 패턴
 
 ---
 
-**Skill Status**: Modular structure with progressive loading for optimal context management
+**Skill 상태**: 최적의 context 관리를 위한 progressive loading이 포함된 모듈형 구조
