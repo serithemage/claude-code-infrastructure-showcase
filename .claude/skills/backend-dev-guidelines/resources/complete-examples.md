@@ -1,21 +1,21 @@
-# 완전한 예제 - 실제 작동하는 코드
+# 完全な例 - 実際に動作するコード
 
-모든 구현 패턴을 보여주는 실제 예제입니다.
+すべての実装パターンを示す実際の例です。
 
-## 목차
+## 目次
 
-- [완전한 Controller 예제](#완전한-controller-예제)
-- [DI가 포함된 완전한 Service](#di가-포함된-완전한-service)
-- [완전한 Route 파일](#완전한-route-파일)
-- [완전한 Repository](#완전한-repository)
-- [리팩토링 예제: 나쁜 코드에서 좋은 코드로](#리팩토링-예제-나쁜-코드에서-좋은-코드로)
-- [End-to-End 기능 예제](#end-to-end-기능-예제)
+- [完全なController例](#完全なcontroller例)
+- [DIを含む完全なService](#diを含む完全なservice)
+- [完全なRouteファイル](#完全なrouteファイル)
+- [完全なRepository](#完全なrepository)
+- [リファクタリング例: 悪いコードから良いコードへ](#リファクタリング例-悪いコードから良いコードへ)
+- [End-to-End機能例](#end-to-end機能例)
 
 ---
 
-## 완전한 Controller 예제
+## 完全なController例
 
-### UserController (모든 모범 사례 적용)
+### UserController（すべてのベストプラクティス適用）
 
 ```typescript
 // controllers/UserController.ts
@@ -71,10 +71,10 @@ export class UserController extends BaseController {
 
     async createUser(req: Request, res: Response): Promise<void> {
         try {
-            // Zod로 입력 유효성 검사
+            // Zodで入力バリデーション
             const validated = createUserSchema.parse(req.body);
 
-            // 성능 추적
+            // パフォーマンス追跡
             const user = await this.withTransaction(
                 'user.create',
                 'db.mutation',
@@ -121,7 +121,7 @@ export class UserController extends BaseController {
 
 ---
 
-## DI가 포함된 완전한 Service
+## DIを含む完全なService
 
 ### UserService
 
@@ -147,18 +147,18 @@ export class UserService {
     }
 
     async create(data: CreateUserDTO): Promise<User> {
-        // 비즈니스 규칙: 나이 검증
+        // ビジネスルール: 年齢検証
         if (data.age < 18) {
             throw new ValidationError('User must be 18 or older');
         }
 
-        // 비즈니스 규칙: 이메일 고유성 확인
+        // ビジネスルール: メールの一意性確認
         const existing = await this.userRepository.findByEmail(data.email);
         if (existing) {
             throw new ConflictError('Email already in use');
         }
 
-        // 프로필과 함께 사용자 생성
+        // プロファイルとともにユーザー作成
         return await this.userRepository.create({
             email: data.email,
             profile: {
@@ -172,13 +172,13 @@ export class UserService {
     }
 
     async update(id: string, data: UpdateUserDTO): Promise<User> {
-        // 존재 여부 확인
+        // 存在確認
         const existing = await this.userRepository.findById(id);
         if (!existing) {
             throw new NotFoundError('User not found');
         }
 
-        // 비즈니스 규칙: 변경 시 이메일 고유성
+        // ビジネスルール: 変更時のメール一意性
         if (data.email && data.email !== existing.email) {
             const emailTaken = await this.userRepository.findByEmail(data.email);
             if (emailTaken) {
@@ -202,7 +202,7 @@ export class UserService {
 
 ---
 
-## 완전한 Route 파일
+## 完全なRouteファイル
 
 ### userRoutes.ts
 
@@ -216,35 +216,35 @@ import { auditMiddleware } from '../middleware/auditMiddleware';
 const router = Router();
 const controller = new UserController();
 
-// GET /users - 모든 사용자 목록
+// GET /users - すべてのユーザーをリスト
 router.get('/',
     SSOMiddlewareClient.verifyLoginStatus,
     auditMiddleware,
     async (req, res) => controller.listUsers(req, res)
 );
 
-// GET /users/:id - 단일 사용자 조회
+// GET /users/:id - 単一ユーザーを取得
 router.get('/:id',
     SSOMiddlewareClient.verifyLoginStatus,
     auditMiddleware,
     async (req, res) => controller.getUser(req, res)
 );
 
-// POST /users - 사용자 생성
+// POST /users - ユーザーを作成
 router.post('/',
     SSOMiddlewareClient.verifyLoginStatus,
     auditMiddleware,
     async (req, res) => controller.createUser(req, res)
 );
 
-// PUT /users/:id - 사용자 업데이트
+// PUT /users/:id - ユーザーを更新
 router.put('/:id',
     SSOMiddlewareClient.verifyLoginStatus,
     auditMiddleware,
     async (req, res) => controller.updateUser(req, res)
 );
 
-// DELETE /users/:id - 사용자 삭제
+// DELETE /users/:id - ユーザーを削除
 router.delete('/:id',
     SSOMiddlewareClient.verifyLoginStatus,
     auditMiddleware,
@@ -256,7 +256,7 @@ export default router;
 
 ---
 
-## 완전한 Repository
+## 完全なRepository
 
 ### UserRepository
 
@@ -318,38 +318,38 @@ export class UserRepository {
 
 ---
 
-## 리팩토링 예제: 나쁜 코드에서 좋은 코드로
+## リファクタリング例: 悪いコードから良いコードへ
 
-### 이전: Routes에 비즈니스 로직 ❌
+### 以前: Routesにビジネスロジック ❌
 
 ```typescript
-// routes/postRoutes.ts (나쁜 예 - 200줄 이상)
+// routes/postRoutes.ts（悪い例 - 200行以上）
 router.post('/posts', async (req, res) => {
     try {
         const username = res.locals.claims.preferred_username;
         const responses = req.body.responses;
         const stepInstanceId = req.body.stepInstanceId;
 
-        // ❌ Route에서 권한 확인
+        // ❌ Routeで権限確認
         const userId = await userProfileService.getProfileByEmail(username).then(p => p.id);
         const canComplete = await permissionService.canCompleteStep(userId, stepInstanceId);
         if (!canComplete) {
             return res.status(403).json({ error: 'No permission' });
         }
 
-        // ❌ Route에서 비즈니스 로직
+        // ❌ Routeでビジネスロジック
         const post = await postRepository.create({
             title: req.body.title,
             content: req.body.content,
             authorId: userId
         });
 
-        // ❌ 더 많은 비즈니스 로직...
+        // ❌ さらなるビジネスロジック...
         if (res.locals.isImpersonating) {
             impersonationContextStore.storeContext(...);
         }
 
-        // ... 100줄 이상
+        // ... 100行以上
 
         res.json({ success: true, data: result });
     } catch (e) {
@@ -358,9 +358,9 @@ router.post('/posts', async (req, res) => {
 });
 ```
 
-### 이후: 깔끔한 분리 ✅
+### 以後: クリーンな分離 ✅
 
-**1. 깔끔한 Route:**
+**1. クリーンなRoute:**
 ```typescript
 // routes/postRoutes.ts
 import { PostController } from '../controllers/PostController';
@@ -368,7 +368,7 @@ import { PostController } from '../controllers/PostController';
 const router = Router();
 const controller = new PostController();
 
-// ✅ 깔끔함: 총 8줄!
+// ✅ クリーン: 合計8行！
 router.post('/',
     SSOMiddlewareClient.verifyLoginStatus,
     auditMiddleware,
@@ -416,7 +416,7 @@ export class PostService {
         data: CreatePostDTO,
         userId: string
     ): Promise<SubmissionResult> {
-        // 권한 확인
+        // 権限確認
         const canComplete = await permissionService.canCompleteStep(
             userId,
             data.stepInstanceId
@@ -426,7 +426,7 @@ export class PostService {
             throw new ForbiddenError('No permission to complete step');
         }
 
-        // Workflow 실행
+        // Workflow実行
         const engine = await createWorkflowEngine();
         const command = new CompleteStepCommand(
             data.stepInstanceId,
@@ -435,7 +435,7 @@ export class PostService {
         );
         const events = await engine.executeCommand(command);
 
-        // Impersonation 처리
+        // Impersonation処理
         if (context.isImpersonating) {
             await this.handleImpersonation(data.stepInstanceId, context);
         }
@@ -452,17 +452,17 @@ export class PostService {
 }
 ```
 
-**결과:**
-- Route: 8줄 (200줄 이상이었음)
-- Controller: 25줄
-- Service: 40줄
-- **테스트 가능, 유지보수 가능, 재사용 가능!**
+**結果:**
+- Route: 8行（200行以上だった）
+- Controller: 25行
+- Service: 40行
+- **テスト可能、保守可能、再利用可能！**
 
 ---
 
-## End-to-End 기능 예제
+## End-to-End機能例
 
-### 완전한 사용자 관리 기능
+### 完全なユーザー管理機能
 
 **1. Types:**
 ```typescript
@@ -594,7 +594,7 @@ router.post('/',
 export default router;
 ```
 
-**7. app.ts에 등록:**
+**7. app.tsに登録:**
 ```typescript
 // app.ts
 import userRoutes from './routes/userRoutes';
@@ -602,36 +602,36 @@ import userRoutes from './routes/userRoutes';
 app.use('/api/users', userRoutes);
 ```
 
-**전체 요청 흐름:**
+**全体のリクエストフロー:**
 ```
 POST /api/users
   ↓
-userRoutes가 /와 매칭
+userRoutesが/にマッチ
   ↓
-SSOMiddleware가 인증
+SSOMiddlewareが認証
   ↓
-controller.createUser 호출
+controller.createUserを呼び出し
   ↓
-Zod로 유효성 검사
+Zodでバリデーション
   ↓
-userService.create 호출
+userService.createを呼び出し
   ↓
-비즈니스 규칙 확인
+ビジネスルール確認
   ↓
-userRepository.create 호출
+userRepository.createを呼び出し
   ↓
-Prisma가 사용자 생성
+Prismaがユーザー作成
   ↓
-역순으로 응답 반환
+逆順でレスポンス返却
   ↓
-Controller가 응답 포맷
+Controllerがレスポンスをフォーマット
   ↓
-200/201을 클라이언트로 전송
+200/201をクライアントに送信
 ```
 
 ---
 
-**관련 파일:**
+**関連ファイル:**
 - [SKILL.md](SKILL.md)
 - [routing-and-controllers.md](routing-and-controllers.md)
 - [services-and-repositories.md](services-and-repositories.md)

@@ -1,14 +1,14 @@
-# TypeScript 표준
+# TypeScript 標準
 
-React 프론트엔드 코드의 타입 안전성과 유지보수성을 위한 TypeScript 모범 사례입니다.
+React フロントエンドコードの型安全と保守性のための TypeScript ベストプラクティスです。
 
 ---
 
-## Strict 모드
+## Strict モード
 
-### 설정
+### 設定
 
-프로젝트에서 TypeScript strict 모드가 **활성화**되어 있습니다:
+プロジェクトで TypeScript strict モードが**有効化**されています:
 
 ```json
 // tsconfig.json
@@ -21,24 +21,24 @@ React 프론트엔드 코드의 타입 안전성과 유지보수성을 위한 Ty
 }
 ```
 
-**의미:**
-- 암시적 `any` 타입 금지
-- Null/undefined를 명시적으로 처리해야 함
-- 타입 안전성 강제
+**意味:**
+- 暗黙的な `any` 型禁止
+- Null/undefined を明示的に処理する必要あり
+- 型安全を強制
 
 ---
 
-## `any` 타입 금지
+## `any` 型禁止
 
-### 규칙
+### ルール
 
 ```typescript
-// ❌ 절대 any 사용 금지
+// ❌ 絶対 any 使用禁止
 function handleData(data: any) {
     return data.something;
 }
 
-// ✅ 특정 타입 사용
+// ✅ 特定の型使用
 interface MyData {
     something: string;
 }
@@ -47,7 +47,7 @@ function handleData(data: MyData) {
     return data.something;
 }
 
-// ✅ 또는 진짜 알 수 없는 데이터에는 unknown 사용
+// ✅ または本当に不明なデータには unknown 使用
 function handleUnknown(data: unknown) {
     if (typeof data === 'object' && data !== null && 'something' in data) {
         return (data as MyData).something;
@@ -55,19 +55,19 @@ function handleUnknown(data: unknown) {
 }
 ```
 
-**타입을 정말 모르는 경우:**
-- `unknown` 사용 (타입 체크 강제)
-- Type guards로 좁히기
-- 타입이 알 수 없는 이유 문서화
+**型が本当に分からない場合:**
+- `unknown` 使用 (型チェック強制)
+- Type guards で絞り込む
+- 型が不明な理由をドキュメント化
 
 ---
 
-## 명시적 반환 타입
+## 明示的戻り値型
 
-### 함수 반환 타입
+### 関数戻り値型
 
 ```typescript
-// ✅ 올바름 - 명시적 반환 타입
+// ✅ 正しい - 明示的戻り値型
 function getUser(id: number): Promise<User> {
     return apiClient.get(`/users/${id}`);
 }
@@ -76,21 +76,21 @@ function calculateTotal(items: Item[]): number {
     return items.reduce((sum, item) => sum + item.price, 0);
 }
 
-// ❌ 피하세요 - 암시적 반환 타입 (덜 명확)
+// ❌ 避ける - 暗黙的戻り値型 (不明確)
 function getUser(id: number) {
     return apiClient.get(`/users/${id}`);
 }
 ```
 
-### 컴포넌트 반환 타입
+### コンポーネント戻り値型
 
 ```typescript
-// React.FC가 이미 반환 타입 제공 (ReactElement)
+// React.FC が既に戻り値型提供 (ReactElement)
 export const MyComponent: React.FC<Props> = ({ prop }) => {
     return <div>{prop}</div>;
 };
 
-// 커스텀 hooks의 경우
+// カスタム hooks の場合
 function useMyData(id: number): { data: Data; isLoading: boolean } {
     const [data, setData] = useState<Data | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -101,67 +101,67 @@ function useMyData(id: number): { data: Data; isLoading: boolean } {
 
 ---
 
-## 타입 Imports
+## 型 Imports
 
-### 'type' 키워드 사용
+### 'type' キーワード使用
 
 ```typescript
-// ✅ 올바름 - 타입 import 명시적으로 표시
+// ✅ 正しい - 型 import 明示的に表示
 import type { User } from '~types/user';
 import type { Post } from '~types/post';
 import type { SxProps, Theme } from '@mui/material';
 
-// ❌ 피하세요 - 값과 타입 import 혼합
-import { User } from '~types/user';  // 타입인지 값인지 불명확
+// ❌ 避ける - 値と型 import 混合
+import { User } from '~types/user';  // 型か値か不明確
 ```
 
-**장점:**
-- 타입과 값을 명확히 분리
-- 더 나은 tree-shaking
-- 순환 의존성 방지
-- TypeScript 컴파일러 최적화
+**利点:**
+- 型と値を明確に分離
+- より良い tree-shaking
+- 循環依存防止
+- TypeScript コンパイラ最適化
 
 ---
 
-## 컴포넌트 Prop 인터페이스
+## コンポーネント Prop インターフェース
 
-### 인터페이스 패턴
+### インターフェースパターン
 
 ```typescript
 /**
- * MyComponent의 Props
+ * MyComponent の Props
  */
 interface MyComponentProps {
-    /** 표시할 사용자 ID */
+    /** 表示するユーザー ID */
     userId: number;
 
-    /** 액션 완료 시 선택적 콜백 */
+    /** アクション完了時の選択的コールバック */
     onComplete?: () => void;
 
-    /** 컴포넌트 표시 모드 */
+    /** コンポーネント表示モード */
     mode?: 'view' | 'edit';
 
-    /** 추가 CSS 클래스 */
+    /** 追加 CSS クラス */
     className?: string;
 }
 
 export const MyComponent: React.FC<MyComponentProps> = ({
     userId,
     onComplete,
-    mode = 'view',  // 기본값
+    mode = 'view',  // デフォルト値
     className,
 }) => {
     return <div>...</div>;
 };
 ```
 
-**핵심 포인트:**
-- props를 위한 별도 인터페이스
-- 각 prop에 JSDoc 주석
-- 선택적 props는 `?` 사용
-- 구조분해에서 기본값 제공
+**キーポイント:**
+- props のための別インターフェース
+- 各 prop に JSDoc コメント
+- 選択的 props は `?` 使用
+- 分割代入でデフォルト値提供
 
-### Children이 있는 Props
+### Children 付き Props
 
 ```typescript
 interface ContainerProps {
@@ -169,7 +169,7 @@ interface ContainerProps {
     title: string;
 }
 
-// React.FC는 자동으로 children 타입 포함하지만, 명시적으로 작성
+// React.FC は自動的に children 型含むが、明示的に記述
 export const Container: React.FC<ContainerProps> = ({ children, title }) => {
     return (
         <div>
@@ -182,64 +182,64 @@ export const Container: React.FC<ContainerProps> = ({ children, title }) => {
 
 ---
 
-## 유틸리티 타입
+## ユーティリティ型
 
 ### Partial<T>
 
 ```typescript
-// 모든 속성을 선택적으로
+// すべてのプロパティを選択的に
 type UserUpdate = Partial<User>;
 
 function updateUser(id: number, updates: Partial<User>) {
-    // updates는 User 속성의 어떤 부분집합도 가능
+    // updates は User プロパティの任意の部分集合可能
 }
 ```
 
 ### Pick<T, K>
 
 ```typescript
-// 특정 속성 선택
+// 特定プロパティ選択
 type UserPreview = Pick<User, 'id' | 'name' | 'email'>;
 
 const preview: UserPreview = {
     id: 1,
     name: 'John',
     email: 'john@example.com',
-    // 다른 User 속성 허용 안 됨
+    // 他の User プロパティ許可されない
 };
 ```
 
 ### Omit<T, K>
 
 ```typescript
-// 특정 속성 제외
+// 特定プロパティ除外
 type UserWithoutPassword = Omit<User, 'password' | 'passwordHash'>;
 
 const publicUser: UserWithoutPassword = {
     id: 1,
     name: 'John',
     email: 'john@example.com',
-    // password와 passwordHash 허용 안 됨
+    // password と passwordHash 許可されない
 };
 ```
 
 ### Required<T>
 
 ```typescript
-// 모든 속성을 필수로
-type RequiredConfig = Required<Config>;  // 모든 선택적 props가 필수로
+// すべてのプロパティを必須に
+type RequiredConfig = Required<Config>;  // すべての選択的 props が必須に
 ```
 
 ### Record<K, V>
 
 ```typescript
-// 타입 안전 객체/맵
+// 型安全オブジェクト/マップ
 const userMap: Record<string, User> = {
     'user1': { id: 1, name: 'John' },
     'user2': { id: 2, name: 'Jane' },
 };
 
-// 스타일용
+// スタイル用
 import type { SxProps, Theme } from '@mui/material';
 
 const styles: Record<string, SxProps<Theme>> = {
@@ -252,7 +252,7 @@ const styles: Record<string, SxProps<Theme>> = {
 
 ## Type Guards
 
-### 기본 Type Guards
+### 基本 Type Guards
 
 ```typescript
 function isUser(data: unknown): data is User {
@@ -264,9 +264,9 @@ function isUser(data: unknown): data is User {
     );
 }
 
-// 사용
+// 使用
 if (isUser(response)) {
-    console.log(response.name);  // TypeScript가 User로 인식
+    console.log(response.name);  // TypeScript が User として認識
 }
 ```
 
@@ -280,13 +280,13 @@ type LoadingState =
     | { status: 'error'; error: Error };
 
 function Component({ state }: { state: LoadingState }) {
-    // TypeScript가 status 기반으로 타입 좁히기
+    // TypeScript が status に基づいて型絞り込み
     if (state.status === 'success') {
-        return <Display data={state.data} />;  // 여기서 data 사용 가능
+        return <Display data={state.data} />;  // ここで data 使用可能
     }
 
     if (state.status === 'error') {
-        return <Error error={state.error} />;  // 여기서 error 사용 가능
+        return <Error error={state.error} />;  // ここで error 使用可能
     }
 
     return <Loading />;
@@ -295,21 +295,21 @@ function Component({ state }: { state: LoadingState }) {
 
 ---
 
-## 제네릭 타입
+## ジェネリック型
 
-### 제네릭 함수
+### ジェネリック関数
 
 ```typescript
 function getById<T>(items: T[], id: number): T | undefined {
     return items.find(item => (item as any).id === id);
 }
 
-// 타입 추론과 함께 사용
+// 型推論と共に使用
 const users: User[] = [...];
-const user = getById(users, 123);  // 타입: User | undefined
+const user = getById(users, 123);  // 型: User | undefined
 ```
 
-### 제네릭 컴포넌트
+### ジェネリックコンポーネント
 
 ```typescript
 interface ListProps<T> {
@@ -327,7 +327,7 @@ export function List<T>({ items, renderItem }: ListProps<T>): React.ReactElement
     );
 }
 
-// 사용
+// 使用
 <List<User>
     items={users}
     renderItem={(user) => <UserCard user={user} />}
@@ -336,83 +336,83 @@ export function List<T>({ items, renderItem }: ListProps<T>): React.ReactElement
 
 ---
 
-## 타입 단언 (신중하게 사용)
+## 型アサーション (慎重に使用)
 
-### 사용해야 할 때
+### 使用すべきとき
 
 ```typescript
-// ✅ OK - TypeScript보다 더 알고 있을 때
+// ✅ OK - TypeScript より詳しく知っているとき
 const element = document.getElementById('my-element') as HTMLInputElement;
 const value = element.value;
 
-// ✅ OK - 검증한 API 응답
+// ✅ OK - 検証した API レスポンス
 const response = await api.getData();
-const user = response.data as User;  // 형태를 알고 있음
+const user = response.data as User;  // 形状を知っている
 ```
 
-### 사용하면 안 되는 경우
+### 使用すべきでないとき
 
 ```typescript
-// ❌ 피하세요 - 타입 안전성 우회
-const data = getData() as any;  // 잘못됨 - TypeScript 무력화
+// ❌ 避ける - 型安全をバイパス
+const data = getData() as any;  // 間違い - TypeScript 無効化
 
-// ❌ 피하세요 - 안전하지 않은 단언
-const value = unknownValue as string;  // 실제로 string이 아닐 수 있음
+// ❌ 避ける - 安全でないアサーション
+const value = unknownValue as string;  // 実際に string でないかもしれない
 ```
 
 ---
 
-## Null/Undefined 처리
+## Null/Undefined 処理
 
 ### Optional Chaining
 
 ```typescript
-// ✅ 올바름
+// ✅ 正しい
 const name = user?.profile?.name;
 
-// 동등한 코드:
+// 同等のコード:
 const name = user && user.profile && user.profile.name;
 ```
 
 ### Nullish Coalescing
 
 ```typescript
-// ✅ 올바름
+// ✅ 正しい
 const displayName = user?.name ?? 'Anonymous';
 
-// null 또는 undefined일 때만 기본값 사용
-// (||와 다름 - ''나 0, false에서는 트리거 안 됨)
+// null または undefined のときのみデフォルト値使用
+// (|| と異なる - '' や 0、false ではトリガーしない)
 ```
 
-### Non-Null Assertion (신중하게 사용)
+### Non-Null Assertion (慎重に使用)
 
 ```typescript
-// ✅ OK - 값이 존재한다고 확신할 때
+// ✅ OK - 値が存在すると確信しているとき
 const data = queryClient.getQueryData<Data>(['data'])!;
 
-// ⚠️ 주의 - null이 아님을 알 때만 사용
-// 명시적 체크가 더 나음:
+// ⚠️ 注意 - null でないと分かっているときのみ使用
+// 明示的チェックがより良い:
 const data = queryClient.getQueryData<Data>(['data']);
 if (data) {
-    // data 사용
+    // data 使用
 }
 ```
 
 ---
 
-## 요약
+## まとめ
 
-**TypeScript 체크리스트:**
-- ✅ Strict 모드 활성화
-- ✅ `any` 타입 금지 (필요하면 `unknown` 사용)
-- ✅ 함수에 명시적 반환 타입
-- ✅ 타입 imports에 `import type` 사용
-- ✅ prop 인터페이스에 JSDoc 주석
-- ✅ 유틸리티 타입 (Partial, Pick, Omit, Required, Record)
-- ✅ 좁히기를 위한 Type guards
-- ✅ Optional chaining과 nullish coalescing
-- ❌ 꼭 필요한 경우 아니면 타입 단언 피하기
+**TypeScript チェックリスト:**
+- ✅ Strict モード有効化
+- ✅ `any` 型禁止 (必要なら `unknown` 使用)
+- ✅ 関数に明示的戻り値型
+- ✅ 型 imports に `import type` 使用
+- ✅ prop インターフェースに JSDoc コメント
+- ✅ ユーティリティ型 (Partial, Pick, Omit, Required, Record)
+- ✅ 絞り込みのための Type guards
+- ✅ Optional chaining と nullish coalescing
+- ❌ どうしても必要な場合以外は型アサーション避ける
 
-**참고:**
-- [component-patterns.md](component-patterns.md) - 컴포넌트 타이핑
-- [data-fetching.md](data-fetching.md) - API 타이핑
+**参考:**
+- [component-patterns.md](component-patterns.md) - コンポーネント型付け
+- [data-fetching.md](data-fetching.md) - API 型付け

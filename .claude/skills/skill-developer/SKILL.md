@@ -3,146 +3,146 @@ name: skill-developer
 description: Create and manage Claude Code skills following Anthropic best practices. Use when creating new skills, modifying skill-rules.json, understanding trigger patterns, working with hooks, debugging skill activation, or implementing progressive disclosure. Covers skill structure, YAML frontmatter, trigger types (keywords, intent patterns, file paths, content patterns), enforcement levels (block, suggest, warn), hook mechanisms (UserPromptSubmit, PreToolUse), session tracking, and the 500-line rule.
 ---
 
-# Skill 개발자 가이드
+# Skill 開発者ガイド
 
-## 목적
+## 目的
 
-Anthropic의 공식 모범 사례(500-line rule, Progressive disclosure 패턴 포함)를 따르는 Claude Code의 skills 생성 및 관리에 대한 종합 가이드입니다.
+Anthropicの公式ベストプラクティス（500-line rule、Progressive disclosureパターンを含む）に従ったClaude Code skillsの作成と管理についての包括的なガイドです。
 
-## 이 Skill 사용 시점
+## このSkillの使用タイミング
 
-다음을 언급할 때 자동 활성화됩니다:
-- Skills 생성 또는 추가
-- Skill triggers 또는 rules 수정
-- Skill 활성화 작동 방식 이해
-- Skill 활성화 문제 디버깅
-- skill-rules.json 작업
-- Hook 시스템 메커니즘
-- Claude Code 모범 사례
+以下を言及した場合に自動活性化されます：
+- Skillsの作成または追加
+- Skill triggersまたはrulesの修正
+- Skill活性化の動作の理解
+- Skill活性化問題のデバッグ
+- skill-rules.jsonの作業
+- Hookシステムメカニズム
+- Claude Codeベストプラクティス
 - Progressive disclosure
 - YAML frontmatter
 - 500-line rule
 
 ---
 
-## 시스템 개요
+## システム概要
 
-### 2-Hook 아키텍처
+### 2-Hookアーキテクチャ
 
-**1. UserPromptSubmit Hook** (사전 제안)
-- **파일**: `.claude/hooks/skill-activation-prompt.ts`
-- **트리거**: Claude가 사용자 프롬프트를 보기 전에
-- **목적**: 키워드 + intent 패턴 기반으로 관련 skills 제안
-- **방식**: 포맷된 리마인더를 context로 주입 (stdout → Claude 입력)
-- **사용 사례**: 주제 기반 skills, 암시적 작업 감지
+**1. UserPromptSubmit Hook**（事前提案）
+- **ファイル**: `.claude/hooks/skill-activation-prompt.ts`
+- **トリガー**: Claudeがユーザープロンプトを見る前に
+- **目的**: キーワード + intentパターンに基づいて関連skillsを提案
+- **方式**: フォーマットされたリマインダーをcontextに注入（stdout → Claude入力）
+- **使用事例**: トピックベースのskills、暗黙的なタスク検出
 
-**2. Stop Hook - 오류 처리 리마인더** (부드러운 알림)
-- **파일**: `.claude/hooks/error-handling-reminder.ts`
-- **트리거**: Claude가 응답을 완료한 후에
-- **목적**: 작성한 코드의 오류 처리에 대한 자가 평가를 위한 부드러운 리마인더
-- **방식**: 편집된 파일에서 위험한 패턴을 분석하고, 필요시 리마인더 표시
-- **사용 사례**: 차단 마찰 없이 오류 처리 인식 유지
+**2. Stop Hook - エラー処理リマインダー**（ソフトな通知）
+- **ファイル**: `.claude/hooks/error-handling-reminder.ts`
+- **トリガー**: Claudeが応答を完了した後に
+- **目的**: 作成したコードのエラー処理についての自己評価のためのソフトなリマインダー
+- **方式**: 編集されたファイルで危険なパターンを分析し、必要に応じてリマインダーを表示
+- **使用事例**: ブロック摩擦なしにエラー処理の意識を維持
 
-**철학 변경 (2025-10-27):** Sentry/오류 처리를 위한 차단 PreToolUse에서 벗어났습니다. 대신, 워크플로우를 차단하지 않으면서 코드 품질 인식을 유지하는 부드러운 응답 후 리마인더를 사용합니다.
+**哲学変更（2025-10-27）：** Sentry/エラー処理のためのブロックPreToolUseから離れました。代わりに、ワークフローをブロックせずにコード品質の意識を維持するソフトな応答後リマインダーを使用します。
 
-### 설정 파일
+### 設定ファイル
 
-**위치**: `.claude/skills/skill-rules.json`
+**場所**: `.claude/skills/skill-rules.json`
 
-정의 내용:
-- 모든 skills와 트리거 조건
-- 적용 수준 (block, suggest, warn)
-- 파일 경로 패턴 (glob)
-- 콘텐츠 감지 패턴 (regex)
-- 스킵 조건 (세션 추적, 파일 마커, 환경 변수)
+定義内容:
+- すべてのskillsとトリガー条件
+- 適用レベル（block, suggest, warn）
+- ファイルパスパターン（glob）
+- コンテンツ検出パターン（regex）
+- スキップ条件（セッショントラッキング、ファイルマーカー、環境変数）
 
 ---
 
-## Skill 유형
+## Skillタイプ
 
 ### 1. Guardrail Skills
 
-**목적:** 오류를 방지하는 핵심 모범 사례 강제
+**目的:** エラーを防ぐコアベストプラクティスの強制
 
-**특성:**
+**特性:**
 - Type: `"guardrail"`
 - Enforcement: `"block"`
-- Priority: `"critical"` 또는 `"high"`
-- Skill 사용 전까지 파일 편집 차단
-- 일반적인 실수 방지 (컬럼 이름, 치명적 오류)
-- 세션 인식 (같은 세션에서 반복 알림 안 함)
+- Priority: `"critical"` または `"high"`
+- Skill使用前までファイル編集をブロック
+- 一般的なミスの防止（カラム名、致命的エラー）
+- セッション認識（同一セッションでの繰り返し通知なし）
 
-**예시:**
-- `database-verification` - Prisma 쿼리 전 테이블/컬럼 이름 검증
-- `frontend-dev-guidelines` - React/TypeScript 패턴 강제
+**例:**
+- `database-verification` - Prismaクエリ前のテーブル/カラム名検証
+- `frontend-dev-guidelines` - React/TypeScriptパターンの強制
 
-**사용 시점:**
-- 런타임 오류를 유발하는 실수
-- 데이터 무결성 관련 문제
-- 치명적 호환성 문제
+**使用タイミング:**
+- ランタイムエラーを引き起こすミス
+- データ整合性関連の問題
+- 致命的な互換性問題
 
 ### 2. Domain Skills
 
-**목적:** 특정 영역에 대한 종합 가이드 제공
+**目的:** 特定領域についての包括的なガイドの提供
 
-**특성:**
+**特性:**
 - Type: `"domain"`
 - Enforcement: `"suggest"`
-- Priority: `"high"` 또는 `"medium"`
-- 권고 사항, 강제 아님
-- 주제 또는 도메인 특화
-- 종합적인 문서화
+- Priority: `"high"` または `"medium"`
+- 推奨事項、強制ではない
+- トピックまたはドメイン特化
+- 包括的なドキュメント
 
-**예시:**
-- `backend-dev-guidelines` - Node.js/Express/TypeScript 패턴
-- `frontend-dev-guidelines` - React/TypeScript 모범 사례
-- `error-tracking` - Sentry 통합 가이드
+**例:**
+- `backend-dev-guidelines` - Node.js/Express/TypeScriptパターン
+- `frontend-dev-guidelines` - React/TypeScriptベストプラクティス
+- `error-tracking` - Sentry統合ガイド
 
-**사용 시점:**
-- 깊은 지식이 필요한 복잡한 시스템
-- 모범 사례 문서화
-- 아키텍처 패턴
-- How-to 가이드
+**使用タイミング:**
+- 深い知識が必要な複雑なシステム
+- ベストプラクティスのドキュメント
+- アーキテクチャパターン
+- How-toガイド
 
 ---
 
-## 빠른 시작: 새 Skill 생성
+## クイックスタート: 新しいSkillの作成
 
-### 1단계: Skill 파일 생성
+### ステップ1: Skillファイルの作成
 
-**위치:** `.claude/skills/{skill-name}/SKILL.md`
+**場所:** `.claude/skills/{skill-name}/SKILL.md`
 
-**템플릿:**
+**テンプレート:**
 ```markdown
 ---
 name: my-new-skill
-description: 이 skill을 트리거하는 키워드를 포함한 간단한 설명. 주제, 파일 유형, 사용 사례를 언급하세요. 트리거 용어를 명시적으로 작성하세요.
+description: このskillをトリガーするキーワードを含む簡単な説明。トピック、ファイルタイプ、使用事例を言及してください。トリガー用語を明示的に記載してください。
 ---
 
-# 내 새 Skill
+# 私の新しいSkill
 
-## 목적
-이 skill이 도움이 되는 부분
+## 目的
+このskillが役立つ場面
 
-## 사용 시점
-특정 시나리오와 조건
+## 使用タイミング
+特定のシナリオと条件
 
-## 핵심 정보
-실제 가이드, 문서, 패턴, 예시
+## コア情報
+実際のガイド、ドキュメント、パターン、例
 ```
 
-**모범 사례:**
-- ✅ **이름**: 소문자, 하이픈, 동명사 형태 선호
-- ✅ **설명**: 모든 트리거 키워드/구문 포함 (최대 1024자)
-- ✅ **내용**: 500줄 미만 - 상세 정보는 참조 파일 사용
-- ✅ **예시**: 실제 코드 예시
-- ✅ **구조**: 명확한 제목, 목록, 코드 블록
+**ベストプラクティス:**
+- ✅ **名前**: 小文字、ハイフン、動名詞形式を推奨
+- ✅ **説明**: すべてのトリガーキーワード/フレーズを含む（最大1024文字）
+- ✅ **内容**: 500行未満 - 詳細情報は参照ファイルを使用
+- ✅ **例**: 実際のコード例
+- ✅ **構造**: 明確な見出し、リスト、コードブロック
 
-### 2단계: skill-rules.json에 추가
+### ステップ2: skill-rules.jsonへの追加
 
-전체 스키마는 [SKILL_RULES_REFERENCE.md](SKILL_RULES_REFERENCE.md)를 참조하세요.
+全体スキーマは[SKILL_RULES_REFERENCE.md](SKILL_RULES_REFERENCE.md)を参照してください。
 
-**기본 템플릿:**
+**基本テンプレート:**
 ```json
 {
   "my-new-skill": {
@@ -157,108 +157,108 @@ description: 이 skill을 트리거하는 키워드를 포함한 간단한 설�
 }
 ```
 
-### 3단계: 트리거 테스트
+### ステップ3: トリガーのテスト
 
-**UserPromptSubmit 테스트:**
+**UserPromptSubmitテスト:**
 ```bash
-echo '{"session_id":"test","prompt":"테스트 프롬프트"}' | \
+echo '{"session_id":"test","prompt":"テストプロンプト"}' | \
   npx tsx .claude/hooks/skill-activation-prompt.ts
 ```
 
-**PreToolUse 테스트:**
+**PreToolUseテスト:**
 ```bash
 cat <<'EOF' | npx tsx .claude/hooks/skill-verification-guard.ts
 {"session_id":"test","tool_name":"Edit","tool_input":{"file_path":"test.ts"}}
 EOF
 ```
 
-### 4단계: 패턴 개선
+### ステップ4: パターンの改善
 
-테스트 결과에 따라:
-- 누락된 키워드 추가
-- 오탐을 줄이기 위해 intent 패턴 개선
-- 파일 경로 패턴 조정
-- 실제 파일에 대해 콘텐츠 패턴 테스트
+テスト結果に基づいて:
+- 不足しているキーワードを追加
+- 誤検知を減らすためにintentパターンを改善
+- ファイルパスパターンを調整
+- 実際のファイルでコンテンツパターンをテスト
 
-### 5단계: Anthropic 모범 사례 준수
+### ステップ5: Anthropicベストプラクティスの遵守
 
-✅ SKILL.md 500줄 미만 유지
-✅ 참조 파일로 Progressive disclosure 사용
-✅ 100줄 초과 참조 파일에 목차 추가
-✅ 트리거 키워드가 포함된 상세 설명 작성
-✅ 문서화 전 3개 이상의 실제 시나리오로 테스트
-✅ 실제 사용 기반으로 반복 개선
-
----
-
-## 적용 수준
-
-### BLOCK (핵심 Guardrails)
-
-- Edit/Write 도구 실행을 물리적으로 방지
-- Hook에서 종료 코드 2, stderr → Claude
-- Claude가 메시지를 보고 skill을 사용해야 진행 가능
-- **사용 대상**: 치명적 실수, 데이터 무결성, 보안 문제
-
-**예시:** 데이터베이스 컬럼 이름 검증
-
-### SUGGEST (권장)
-
-- Claude가 프롬프트를 보기 전에 리마인더 주입
-- Claude가 관련 skills를 인식
-- 강제 아님, 권고만
-- **사용 대상**: 도메인 가이드, 모범 사례, how-to 가이드
-
-**예시:** 프론트엔드 개발 가이드라인
-
-### WARN (선택)
-
-- 낮은 우선순위 제안
-- 권고만, 최소 적용
-- **사용 대상**: 있으면 좋은 제안, 정보성 리마인더
-
-**드물게 사용** - 대부분의 skills는 BLOCK 또는 SUGGEST입니다.
+✅ SKILL.mdを500行未満に維持
+✅ 参照ファイルでProgressive disclosureを使用
+✅ 100行を超える参照ファイルには目次を追加
+✅ トリガーキーワードを含む詳細な説明を作成
+✅ ドキュメント化前に3つ以上の実際のシナリオでテスト
+✅ 実際の使用に基づいて反復改善
 
 ---
 
-## 스킵 조건 및 사용자 제어
+## 適用レベル
 
-### 1. 세션 추적
+### BLOCK（コアGuardrails）
 
-**목적:** 같은 세션에서 반복 알림 방지
+- Edit/Writeツール実行を物理的に防止
+- Hookから終了コード2、stderr → Claude
+- Claudeがメッセージを見てskillを使用すれば進行可能
+- **使用対象**: 致命的なミス、データ整合性、セキュリティ問題
 
-**작동 방식:**
-- 첫 번째 편집 → Hook이 차단하고 세션 상태 업데이트
-- 두 번째 편집 (같은 세션) → Hook이 허용
-- 다른 세션 → 다시 차단
+**例:** データベースカラム名の検証
 
-**상태 파일:** `.claude/hooks/state/skills-used-{session_id}.json`
+### SUGGEST（推奨）
 
-### 2. 파일 마커
+- Claudeがプロンプトを見る前にリマインダーを注入
+- Claudeが関連skillsを認識
+- 強制ではなく、推奨のみ
+- **使用対象**: ドメインガイド、ベストプラクティス、how-toガイド
 
-**목적:** 검증된 파일의 영구 스킵
+**例:** フロントエンド開発ガイドライン
 
-**마커:** `// @skip-validation`
+### WARN（オプション）
 
-**사용법:**
+- 低優先度の提案
+- 推奨のみ、最小限の適用
+- **使用対象**: あると良い提案、情報提供のリマインダー
+
+**まれに使用** - ほとんどのskillsはBLOCKまたはSUGGESTです。
+
+---
+
+## スキップ条件とユーザー制御
+
+### 1. セッショントラッキング
+
+**目的:** 同一セッションでの繰り返し通知の防止
+
+**動作方式:**
+- 最初の編集 → Hookがブロックしセッション状態を更新
+- 2回目の編集（同一セッション） → Hookが許可
+- 別のセッション → 再度ブロック
+
+**状態ファイル:** `.claude/hooks/state/skills-used-{session_id}.json`
+
+### 2. ファイルマーカー
+
+**目的:** 検証済みファイルの永久スキップ
+
+**マーカー:** `// @skip-validation`
+
+**使用法:**
 ```typescript
 // @skip-validation
 import { PrismaService } from './prisma';
-// 이 파일은 수동으로 검증되었습니다
+// このファイルは手動で検証されました
 ```
 
-**참고:** 남용 시 목적이 무력화되므로 신중하게 사용
+**注意:** 乱用すると目的が無効になるため慎重に使用
 
-### 3. 환경 변수
+### 3. 環境変数
 
-**목적:** 긴급 비활성화, 임시 재정의
+**目的:** 緊急無効化、一時的なオーバーライド
 
-**전역 비활성화:**
+**グローバル無効化:**
 ```bash
-export SKIP_SKILL_GUARDRAILS=true  # 모든 PreToolUse 차단 비활성화
+export SKIP_SKILL_GUARDRAILS=true  # すべてのPreToolUseブロックを無効化
 ```
 
-**Skill별:**
+**Skill別:**
 ```bash
 export SKIP_DB_VERIFICATION=true
 export SKIP_ERROR_REMINDER=true
@@ -266,129 +266,129 @@ export SKIP_ERROR_REMINDER=true
 
 ---
 
-## 테스트 체크리스트
+## テストチェックリスト
 
-새 skill 생성 시 확인 사항:
+新しいskill作成時の確認事項:
 
-- [ ] `.claude/skills/{name}/SKILL.md`에 skill 파일 생성됨
-- [ ] 이름과 설명이 포함된 올바른 frontmatter
-- [ ] `skill-rules.json`에 항목 추가됨
-- [ ] 실제 프롬프트로 키워드 테스트됨
-- [ ] 다양한 변형으로 intent 패턴 테스트됨
-- [ ] 실제 파일로 파일 경로 패턴 테스트됨
-- [ ] 파일 내용에 대해 콘텐츠 패턴 테스트됨
-- [ ] 차단 메시지가 명확하고 실행 가능함 (guardrail인 경우)
-- [ ] 스킵 조건이 적절히 설정됨
-- [ ] 우선순위 수준이 중요도와 일치함
-- [ ] 테스트에서 오탐 없음
-- [ ] 테스트에서 미탐 없음
-- [ ] 성능 허용 범위 (<100ms 또는 <200ms)
-- [ ] JSON 구문 검증: `jq . skill-rules.json`
-- [ ] **SKILL.md 500줄 미만** ⭐
-- [ ] 필요시 참조 파일 생성됨
-- [ ] 100줄 초과 파일에 목차 추가됨
+- [ ] `.claude/skills/{name}/SKILL.md`にskillファイルが作成された
+- [ ] 名前と説明を含む正しいfrontmatter
+- [ ] `skill-rules.json`にエントリが追加された
+- [ ] 実際のプロンプトでキーワードがテストされた
+- [ ] 様々なバリエーションでintentパターンがテストされた
+- [ ] 実際のファイルでファイルパスパターンがテストされた
+- [ ] ファイル内容でコンテンツパターンがテストされた
+- [ ] ブロックメッセージが明確で実行可能（guardrailの場合）
+- [ ] スキップ条件が適切に設定された
+- [ ] 優先度レベルが重要度と一致している
+- [ ] テストで誤検知なし
+- [ ] テストで検出漏れなし
+- [ ] パフォーマンスが許容範囲内（<100msまたは<200ms）
+- [ ] JSON構文の検証: `jq . skill-rules.json`
+- [ ] **SKILL.mdが500行未満** ⭐
+- [ ] 必要に応じて参照ファイルが作成された
+- [ ] 100行を超えるファイルには目次が追加された
 
 ---
 
-## 참조 파일
+## 参照ファイル
 
-특정 주제에 대한 상세 정보는 다음을 참조하세요:
+特定のトピックについての詳細情報は以下を参照してください:
 
 ### [TRIGGER_TYPES.md](TRIGGER_TYPES.md)
-모든 트리거 유형 종합 가이드:
-- 키워드 트리거 (명시적 주제 매칭)
-- Intent 패턴 (암시적 동작 감지)
-- 파일 경로 트리거 (glob 패턴)
-- 콘텐츠 패턴 (파일 내 regex)
-- 각각의 모범 사례와 예시
-- 일반적인 함정과 테스트 전략
+すべてのトリガータイプの包括的なガイド:
+- キーワードトリガー（明示的トピックマッチング）
+- Intentパターン（暗黙的動作検出）
+- ファイルパストリガー（globパターン）
+- コンテンツパターン（ファイル内regex）
+- 各タイプのベストプラクティスと例
+- 一般的な落とし穴とテスト戦略
 
 ### [SKILL_RULES_REFERENCE.md](SKILL_RULES_REFERENCE.md)
-skill-rules.json 전체 스키마:
-- 전체 TypeScript 인터페이스 정의
-- 필드별 설명
-- 전체 guardrail skill 예시
-- 전체 domain skill 예시
-- 검증 가이드 및 일반적인 오류
+skill-rules.jsonの完全スキーマ:
+- 完全なTypeScriptインターフェース定義
+- フィールド別の説明
+- 完全なguardrail skillの例
+- 完全なdomain skillの例
+- 検証ガイドと一般的なエラー
 
 ### [HOOK_MECHANISMS.md](HOOK_MECHANISMS.md)
-Hook 내부 심층 분석:
-- UserPromptSubmit 흐름 (상세)
-- PreToolUse 흐름 (상세)
-- 종료 코드 동작 표 (핵심)
-- 세션 상태 관리
-- 성능 고려사항
+Hook内部の深堀り分析:
+- UserPromptSubmitフロー（詳細）
+- PreToolUseフロー（詳細）
+- 終了コード動作表（重要）
+- セッション状態管理
+- パフォーマンス考慮事項
 
 ### [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
-종합 디버깅 가이드:
-- Skill이 트리거되지 않음 (UserPromptSubmit)
-- PreToolUse가 차단하지 않음
-- 오탐 (너무 많은 트리거)
-- Hook이 전혀 실행되지 않음
-- 성능 문제
+包括的なデバッグガイド:
+- Skillがトリガーされない（UserPromptSubmit）
+- PreToolUseがブロックしない
+- 誤検知（トリガーが多すぎる）
+- Hookが全く実行されない
+- パフォーマンス問題
 
 ### [PATTERNS_LIBRARY.md](PATTERNS_LIBRARY.md)
-바로 사용 가능한 패턴 모음:
-- Intent 패턴 라이브러리 (regex)
-- 파일 경로 패턴 라이브러리 (glob)
-- 콘텐츠 패턴 라이브러리 (regex)
-- 사용 사례별 정리
-- 복사-붙여넣기 가능
+すぐに使えるパターンコレクション:
+- Intentパターンライブラリ（regex）
+- ファイルパスパターンライブラリ（glob）
+- コンテンツパターンライブラリ（regex）
+- 使用事例別整理
+- コピー＆ペースト可能
 
 ### [ADVANCED.md](ADVANCED.md)
-향후 개선 사항 및 아이디어:
-- 동적 규칙 업데이트
-- Skill 종속성
-- 조건부 적용
-- Skill 분석
-- Skill 버전 관리
+今後の改善事項とアイデア:
+- 動的ルール更新
+- Skill依存関係
+- 条件付き適用
+- Skill分析
+- Skillバージョン管理
 
 ---
 
-## 빠른 참조 요약
+## クイックリファレンスサマリー
 
-### 새 Skill 생성 (5단계)
+### 新規Skill作成（5ステップ）
 
-1. frontmatter와 함께 `.claude/skills/{name}/SKILL.md` 생성
-2. `.claude/skills/skill-rules.json`에 항목 추가
-3. `npx tsx` 명령으로 테스트
-4. 테스트 기반으로 패턴 개선
-5. SKILL.md 500줄 미만 유지
+1. frontmatterとともに`.claude/skills/{name}/SKILL.md`を作成
+2. `.claude/skills/skill-rules.json`にエントリを追加
+3. `npx tsx`コマンドでテスト
+4. テストに基づいてパターンを改善
+5. SKILL.mdを500行未満に維持
 
-### 트리거 유형
+### トリガータイプ
 
-- **Keywords**: 명시적 주제 언급
-- **Intent**: 암시적 동작 감지
-- **File Paths**: 위치 기반 활성화
-- **Content**: 기술 특화 감지
+- **Keywords**: 明示的なトピック言及
+- **Intent**: 暗黙的な動作検出
+- **File Paths**: 場所ベースの活性化
+- **Content**: 技術特化の検出
 
-상세 내용은 [TRIGGER_TYPES.md](TRIGGER_TYPES.md)를 참조하세요.
+詳細は[TRIGGER_TYPES.md](TRIGGER_TYPES.md)を参照してください。
 
-### 적용
+### 適用
 
-- **BLOCK**: 종료 코드 2, 핵심 사항만
-- **SUGGEST**: context 주입, 가장 일반적
-- **WARN**: 권고, 드물게 사용
+- **BLOCK**: 終了コード2、コア事項のみ
+- **SUGGEST**: context注入、最も一般的
+- **WARN**: 推奨、まれに使用
 
-### 스킵 조건
+### スキップ条件
 
-- **세션 추적**: 자동 (반복 알림 방지)
-- **파일 마커**: `// @skip-validation` (영구 스킵)
-- **환경 변수**: `SKIP_SKILL_GUARDRAILS` (긴급 비활성화)
+- **セッショントラッキング**: 自動（繰り返し通知防止）
+- **ファイルマーカー**: `// @skip-validation`（永久スキップ）
+- **環境変数**: `SKIP_SKILL_GUARDRAILS`（緊急無効化）
 
-### Anthropic 모범 사례
+### Anthropicベストプラクティス
 
-✅ **500-line rule**: SKILL.md 500줄 미만 유지
-✅ **Progressive disclosure**: 상세 정보는 참조 파일 사용
-✅ **목차**: 100줄 초과 참조 파일에 추가
-✅ **한 단계 깊이**: 참조를 깊게 중첩하지 않음
-✅ **풍부한 설명**: 모든 트리거 키워드 포함 (최대 1024자)
-✅ **먼저 테스트**: 광범위한 문서화 전 3개 이상의 평가 구축
-✅ **동명사 명명**: 동사 + -ing 선호 (예: "processing-pdfs")
+✅ **500-line rule**: SKILL.mdを500行未満に維持
+✅ **Progressive disclosure**: 詳細情報は参照ファイルを使用
+✅ **目次**: 100行を超える参照ファイルに追加
+✅ **1段階の深さ**: 参照を深くネストしない
+✅ **豊富な説明**: すべてのトリガーキーワードを含む（最大1024文字）
+✅ **まずテスト**: 広範なドキュメント化前に3つ以上の評価を構築
+✅ **動名詞命名**: 動詞 + -ingを推奨（例: "processing-pdfs"）
 
-### 문제 해결
+### トラブルシューティング
 
-수동으로 hooks 테스트:
+手動でhooksをテスト:
 ```bash
 # UserPromptSubmit
 echo '{"prompt":"test"}' | npx tsx .claude/hooks/skill-activation-prompt.ts
@@ -399,28 +399,28 @@ cat <<'EOF' | npx tsx .claude/hooks/skill-verification-guard.ts
 EOF
 ```
 
-전체 디버깅 가이드는 [TROUBLESHOOTING.md](TROUBLESHOOTING.md)를 참조하세요.
+完全なデバッグガイドは[TROUBLESHOOTING.md](TROUBLESHOOTING.md)を参照してください。
 
 ---
 
-## 관련 파일
+## 関連ファイル
 
-**설정:**
-- `.claude/skills/skill-rules.json` - 마스터 설정
-- `.claude/hooks/state/` - 세션 추적
-- `.claude/settings.json` - Hook 등록
+**設定:**
+- `.claude/skills/skill-rules.json` - マスター設定
+- `.claude/hooks/state/` - セッショントラッキング
+- `.claude/settings.json` - Hook登録
 
 **Hooks:**
 - `.claude/hooks/skill-activation-prompt.ts` - UserPromptSubmit
-- `.claude/hooks/error-handling-reminder.ts` - Stop 이벤트 (부드러운 리마인더)
+- `.claude/hooks/error-handling-reminder.ts` - Stopイベント（ソフトリマインダー）
 
-**모든 Skills:**
-- `.claude/skills/*/SKILL.md` - Skill 콘텐츠 파일
+**すべてのSkills:**
+- `.claude/skills/*/SKILL.md` - Skillコンテンツファイル
 
 ---
 
-**Skill 상태**: COMPLETE - Anthropic 모범 사례에 따라 재구성됨 ✅
-**줄 수**: < 500 (500-line rule 준수) ✅
-**Progressive Disclosure**: 상세 정보를 위한 참조 파일 ✅
+**Skill状態**: COMPLETE - Anthropicベストプラクティスに従って再構成済み ✅
+**行数**: < 500（500-line rule遵守） ✅
+**Progressive Disclosure**: 詳細情報のための参照ファイル ✅
 
-**다음**: 더 많은 skills 생성, 사용 기반 패턴 개선
+**次のステップ**: より多くのskillsを作成、使用に基づいてパターンを改善

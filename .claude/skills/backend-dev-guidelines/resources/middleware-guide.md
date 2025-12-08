@@ -1,23 +1,23 @@
-# Middleware 가이드 - Express Middleware 패턴
+# Middlewareガイド - Express Middlewareパターン
 
-백엔드 마이크로서비스에서 middleware 생성 및 사용에 대한 완전한 가이드입니다.
+バックエンドマイクロサービスでのmiddleware作成と使用に関する完全なガイドです。
 
-## 목차
+## 目次
 
-- [인증 Middleware](#인증-middleware)
-- [AsyncLocalStorage를 사용한 Audit Middleware](#asynclocalstorage를-사용한-audit-middleware)
+- [認証Middleware](#認証middleware)
+- [AsyncLocalStorageを使用したAudit Middleware](#asynclocalstorageを使用したaudit-middleware)
 - [Error Boundary Middleware](#error-boundary-middleware)
 - [Validation Middleware](#validation-middleware)
-- [조합 가능한 Middleware](#조합-가능한-middleware)
-- [Middleware 순서](#middleware-순서)
+- [組み合わせ可能なMiddleware](#組み合わせ可能なmiddleware)
+- [Middleware順序](#middleware順序)
 
 ---
 
-## 인증 Middleware
+## 認証Middleware
 
-### SSOMiddleware 패턴
+### SSOMiddlewareパターン
 
-**파일:** `/form/src/middleware/SSOMiddleware.ts`
+**ファイル:** `/form/src/middleware/SSOMiddleware.ts`
 
 ```typescript
 export class SSOMiddlewareClient {
@@ -42,11 +42,11 @@ export class SSOMiddlewareClient {
 
 ---
 
-## AsyncLocalStorage를 사용한 Audit Middleware
+## AsyncLocalStorageを使用したAudit Middleware
 
-### Blog API의 훌륭한 패턴
+### Blog APIの優れたパターン
 
-**파일:** `/form/src/middleware/auditMiddleware.ts`
+**ファイル:** `/form/src/middleware/auditMiddleware.ts`
 
 ```typescript
 import { AsyncLocalStorage } from 'async_hooks';
@@ -76,19 +76,19 @@ export function auditMiddleware(req: Request, res: Response, next: NextFunction)
     });
 }
 
-// 현재 컨텍스트 getter
+// 現在のコンテキストgetter
 export function getAuditContext(): AuditContext | null {
     return auditContextStorage.getStore() || null;
 }
 ```
 
-**장점:**
-- 전체 요청에 걸쳐 컨텍스트 전파
-- 모든 함수에 컨텍스트를 전달할 필요 없음
-- services, repositories에서 자동으로 사용 가능
-- 타입 안전 컨텍스트 액세스
+**利点:**
+- リクエスト全体にコンテキストを伝播
+- すべての関数にコンテキストを渡す必要なし
+- services、repositoriesで自動的に利用可能
+- タイプセーフなコンテキストアクセス
 
-**Services에서 사용:**
+**Servicesでの使用:**
 ```typescript
 import { getAuditContext } from '../middleware/auditMiddleware';
 
@@ -102,9 +102,9 @@ async function someOperation() {
 
 ## Error Boundary Middleware
 
-### 포괄적인 에러 핸들러
+### 包括的なエラーハンドラー
 
-**파일:** `/form/src/middleware/errorBoundary.ts`
+**ファイル:** `/form/src/middleware/errorBoundary.ts`
 
 ```typescript
 export function errorBoundary(
@@ -113,10 +113,10 @@ export function errorBoundary(
     res: Response,
     next: NextFunction
 ): void {
-    // 상태 코드 결정
+    // ステータスコード決定
     const statusCode = getStatusCodeForError(error);
 
-    // Sentry에 캡처
+    // Sentryにキャプチャ
     Sentry.withScope((scope) => {
         scope.setLevel(statusCode >= 500 ? 'error' : 'warning');
         scope.setTag('error_type', error.name);
@@ -127,7 +127,7 @@ export function errorBoundary(
         Sentry.captureException(error);
     });
 
-    // 사용자 친화적 응답
+    // ユーザーフレンドリーなレスポンス
     res.status(statusCode).json({
         success: false,
         error: {
@@ -138,7 +138,7 @@ export function errorBoundary(
     });
 }
 
-// Async wrapper
+// Asyncラッパー
 export function asyncErrorWrapper(
     handler: (req: Request, res: Response, next: NextFunction) => Promise<any>
 ) {
@@ -154,9 +154,9 @@ export function asyncErrorWrapper(
 
 ---
 
-## 조합 가능한 Middleware
+## 組み合わせ可能なMiddleware
 
-### withAuthAndAudit 패턴
+### withAuthAndAuditパターン
 
 ```typescript
 export function withAuthAndAudit(...authMiddleware: any[]) {
@@ -166,7 +166,7 @@ export function withAuthAndAudit(...authMiddleware: any[]) {
     ];
 }
 
-// 사용법
+// 使用法
 router.post('/:formID/submit',
     ...withAuthAndAudit(SSOMiddlewareClient.verifyLoginStatus),
     async (req, res) => controller.submit(req, res)
@@ -175,39 +175,39 @@ router.post('/:formID/submit',
 
 ---
 
-## Middleware 순서
+## Middleware順序
 
-### 중요한 순서 (반드시 따라야 함)
+### 重要な順序（必ず従うこと）
 
 ```typescript
-// 1. Sentry request handler (첫 번째)
+// 1. Sentry request handler（最初）
 app.use(Sentry.Handlers.requestHandler());
 
-// 2. Body 파싱
+// 2. Bodyパース
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 3. Cookie 파싱
+// 3. Cookieパース
 app.use(cookieParser());
 
-// 4. 인증 초기화
+// 4. 認証初期化
 app.use(SSOMiddleware.initialize());
 
-// 5. 여기서 Routes 등록
+// 5. ここでRoutesを登録
 app.use('/api/users', userRoutes);
 
-// 6. 에러 핸들러 (routes 이후)
+// 6. エラーハンドラー（routes以降）
 app.use(errorBoundary);
 
-// 7. Sentry 에러 핸들러 (마지막)
+// 7. Sentryエラーハンドラー（最後）
 app.use(Sentry.Handlers.errorHandler());
 ```
 
-**규칙:** 에러 핸들러는 반드시 모든 routes 이후에 등록해야 합니다!
+**ルール:** エラーハンドラーは必ずすべてのroutes以降に登録すること！
 
 ---
 
-**관련 파일:**
+**関連ファイル:**
 - [SKILL.md](SKILL.md)
 - [routing-and-controllers.md](routing-and-controllers.md)
 - [async-and-errors.md](async-and-errors.md)

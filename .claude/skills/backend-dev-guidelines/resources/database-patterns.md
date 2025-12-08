@@ -1,30 +1,30 @@
-# 데이터베이스 패턴 - Prisma 모범 사례
+# データベースパターン - Prisma モベストプラクティス
 
-백엔드 마이크로서비스에서 Prisma를 사용한 데이터베이스 액세스 패턴에 대한 완전한 가이드입니다.
+バックエンドマイクロサービスでPrismaを使用したデータベースアクセスパターンの完全なガイドです。
 
-## 목차
+## 目次
 
-- [PrismaService 사용법](#prismaservice-사용법)
-- [Repository 패턴](#repository-패턴)
-- [트랜잭션 패턴](#트랜잭션-패턴)
-- [쿼리 최적화](#쿼리-최적화)
-- [N+1 쿼리 방지](#n1-쿼리-방지)
-- [에러 처리](#에러-처리)
+- [PrismaService使用法](#prismaservice使用法)
+- [Repositoryパターン](#repositoryパターン)
+- [トランザクションパターン](#トランザクションパターン)
+- [クエリ最適化](#クエリ最適化)
+- [N+1クエリ防止](#n1クエリ防止)
+- [エラー処理](#エラー処理)
 
 ---
 
-## PrismaService 사용법
+## PrismaService使用法
 
-### 기본 패턴
+### 基本パターン
 
 ```typescript
 import { PrismaService } from '@project-lifecycle-portal/database';
 
-// 항상 PrismaService.main 사용
+// 常にPrismaService.mainを使用
 const users = await PrismaService.main.user.findMany();
 ```
 
-### 가용성 확인
+### 可用性確認
 
 ```typescript
 if (!PrismaService.isAvailable) {
@@ -36,21 +36,21 @@ const user = await PrismaService.main.user.findUnique({ where: { id } });
 
 ---
 
-## Repository 패턴
+## Repositoryパターン
 
-### Repository를 사용해야 할 때
+### Repositoryを使用すべき場合
 
-✅ **다음 경우 repositories 사용:**
-- 조인/include가 있는 복잡한 쿼리
-- 여러 곳에서 사용되는 쿼리
-- 캐싱 계층이 필요할 때
-- 테스트를 위해 모킹하고 싶을 때
+✅ **次の場合repositoriesを使用:**
+- JOINs/includeがある複雑なクエリ
+- 複数の場所で使用されるクエリ
+- キャッシングレイヤーが必要な場合
+- テストのためにモックしたい場合
 
-❌ **다음 경우 repositories 생략:**
-- 간단한 일회성 쿼리
-- 프로토타이핑 (나중에 리팩토링 가능)
+❌ **次の場合repositoriesを省略:**
+- シンプルな一回限りのクエリ
+- プロトタイピング（後でリファクタリング可能）
 
-### Repository 템플릿
+### Repositoryテンプレート
 
 ```typescript
 export class UserRepository {
@@ -76,9 +76,9 @@ export class UserRepository {
 
 ---
 
-## 트랜잭션 패턴
+## トランザクションパターン
 
-### 단순 트랜잭션
+### 単純トランザクション
 
 ```typescript
 const result = await PrismaService.main.$transaction(async (tx) => {
@@ -88,7 +88,7 @@ const result = await PrismaService.main.$transaction(async (tx) => {
 });
 ```
 
-### 인터랙티브 트랜잭션
+### インタラクティブトランザクション
 
 ```typescript
 const result = await PrismaService.main.$transaction(
@@ -110,15 +110,15 @@ const result = await PrismaService.main.$transaction(
 
 ---
 
-## 쿼리 최적화
+## クエリ最適化
 
-### select로 필드 제한
+### selectでフィールドを制限
 
 ```typescript
-// ❌ 모든 필드 가져오기
+// ❌ すべてのフィールドを取得
 const users = await PrismaService.main.user.findMany();
 
-// ✅ 필요한 필드만 가져오기
+// ✅ 必要なフィールドのみ取得
 const users = await PrismaService.main.user.findMany({
     select: {
         id: true,
@@ -128,10 +128,10 @@ const users = await PrismaService.main.user.findMany({
 });
 ```
 
-### include 신중히 사용
+### includeを慎重に使用
 
 ```typescript
-// ❌ 과도한 includes
+// ❌ 過度なincludes
 const user = await PrismaService.main.user.findUnique({
     where: { id },
     include: {
@@ -141,7 +141,7 @@ const user = await PrismaService.main.user.findUnique({
     },
 });
 
-// ✅ 필요한 것만 include
+// ✅ 必要なものだけinclude
 const user = await PrismaService.main.user.findUnique({
     where: { id },
     include: { profile: true },
@@ -150,31 +150,31 @@ const user = await PrismaService.main.user.findUnique({
 
 ---
 
-## N+1 쿼리 방지
+## N+1クエリ防止
 
-### 문제: N+1 쿼리
+### 問題: N+1クエリ
 
 ```typescript
-// ❌ N+1 쿼리 문제
-const users = await PrismaService.main.user.findMany(); // 1개 쿼리
+// ❌ N+1クエリ問題
+const users = await PrismaService.main.user.findMany(); // 1つのクエリ
 
 for (const user of users) {
-    // N개 쿼리 (사용자당 하나)
+    // Nクエリ（ユーザーごとに1つ）
     const profile = await PrismaService.main.userProfile.findUnique({
         where: { userId: user.id },
     });
 }
 ```
 
-### 해결책: include 또는 배칭 사용
+### 解決策: includeまたはバッチングを使用
 
 ```typescript
-// ✅ include로 단일 쿼리
+// ✅ includeで単一クエリ
 const users = await PrismaService.main.user.findMany({
     include: { profile: true },
 });
 
-// ✅ 또는 배치 쿼리
+// ✅ またはバッチクエリ
 const userIds = users.map(u => u.id);
 const profiles = await PrismaService.main.userProfile.findMany({
     where: { userId: { in: userIds } },
@@ -183,9 +183,9 @@ const profiles = await PrismaService.main.userProfile.findMany({
 
 ---
 
-## 에러 처리
+## エラー処理
 
-### Prisma 에러 타입
+### Prismaエラータイプ
 
 ```typescript
 import { Prisma } from '@prisma/client';
@@ -194,23 +194,23 @@ try {
     await PrismaService.main.user.create({ data });
 } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        // 고유 제약 조건 위반
+        // ユニーク制約違反
         if (error.code === 'P2002') {
             throw new ConflictError('Email already exists');
         }
 
-        // 외래 키 제약 조건
+        // 外部キー制約
         if (error.code === 'P2003') {
             throw new ValidationError('Invalid reference');
         }
 
-        // 레코드 찾을 수 없음
+        // レコード見つからない
         if (error.code === 'P2025') {
             throw new NotFoundError('Record not found');
         }
     }
 
-    // 알 수 없는 에러
+    // 不明なエラー
     Sentry.captureException(error);
     throw error;
 }
@@ -218,7 +218,7 @@ try {
 
 ---
 
-**관련 파일:**
+**関連ファイル:**
 - [SKILL.md](SKILL.md)
 - [services-and-repositories.md](services-and-repositories.md)
 - [async-and-errors.md](async-and-errors.md)

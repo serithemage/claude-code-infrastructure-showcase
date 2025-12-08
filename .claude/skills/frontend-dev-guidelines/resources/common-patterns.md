@@ -1,12 +1,12 @@
-# 공통 패턴
+# 共通パターン
 
-forms, 인증, DataGrid, dialogs 및 기타 일반 UI 요소에 자주 사용되는 패턴입니다.
+forms、認証、DataGrid、dialogs およびその他一般的な UI 要素でよく使用されるパターンです。
 
 ---
 
-## useAuth를 통한 인증
+## useAuth による認証
 
-### 현재 사용자 가져오기
+### 現在のユーザー取得
 
 ```typescript
 import { useAuth } from '@/hooks/useAuth';
@@ -14,7 +14,7 @@ import { useAuth } from '@/hooks/useAuth';
 export const MyComponent: React.FC = () => {
     const { user } = useAuth();
 
-    // 사용 가능한 속성:
+    // 使用可能なプロパティ:
     // - user.id: string
     // - user.email: string
     // - user.username: string
@@ -30,13 +30,13 @@ export const MyComponent: React.FC = () => {
 };
 ```
 
-**인증을 위해 직접 API 호출하지 마세요** - 항상 `useAuth` hook을 사용하세요.
+**認証のために直接 API 呼び出ししないでください** - 常に `useAuth` hook を使用してください。
 
 ---
 
-## React Hook Form을 사용한 Forms
+## React Hook Form を使用した Forms
 
-### 기본 Form
+### 基本 Form
 
 ```typescript
 import { useForm } from 'react-hook-form';
@@ -45,7 +45,7 @@ import { z } from 'zod';
 import { TextField, Button } from '@mui/material';
 import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
 
-// 유효성 검사를 위한 Zod 스키마
+// 検証のための Zod スキーマ
 const formSchema = z.object({
     username: z.string().min(3, 'Username must be at least 3 characters'),
     email: z.string().email('Invalid email address'),
@@ -110,14 +110,14 @@ export const MyForm: React.FC = () => {
 
 ---
 
-## Dialog 컴포넌트 패턴
+## Dialog コンポーネントパターン
 
-### 표준 Dialog 구조
+### 標準 Dialog 構造
 
-BEST_PRACTICES.md에서 - 모든 dialogs는 다음을 포함해야 합니다:
-- 제목에 아이콘
-- 닫기 버튼 (X)
-- 하단에 액션 버튼
+BEST_PRACTICES.md より - すべての dialogs は以下を含む必要があります:
+- タイトルにアイコン
+- 閉じるボタン (X)
+- 下部にアクションボタン
 
 ```typescript
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, IconButton } from '@mui/material';
@@ -145,7 +145,7 @@ export const MyDialog: React.FC<MyDialogProps> = ({ open, onClose, onConfirm }) 
             </DialogTitle>
 
             <DialogContent>
-                {/* 콘텐츠 */}
+                {/* コンテンツ */}
             </DialogContent>
 
             <DialogActions>
@@ -161,21 +161,21 @@ export const MyDialog: React.FC<MyDialogProps> = ({ open, onClose, onConfirm }) 
 
 ---
 
-## DataGrid Wrapper 패턴
+## DataGrid Wrapper パターン
 
-### Wrapper 컴포넌트 계약
+### Wrapper コンポーネント契約
 
-BEST_PRACTICES.md에서 - DataGrid wrappers는 다음을 받아야 합니다:
+BEST_PRACTICES.md より - DataGrid wrappers は以下を受け取る必要があります:
 
-**필수 Props:**
-- `rows`: 데이터 배열
-- `columns`: 컬럼 정의
-- Loading/error 상태
+**必須 Props:**
+- `rows`: データ配列
+- `columns`: カラム定義
+- Loading/error 状態
 
-**선택적 Props:**
-- Toolbar 컴포넌트
-- 커스텀 액션
-- 초기 상태
+**選択的 Props:**
+- Toolbar コンポーネント
+- カスタムアクション
+- 初期状態
 
 ```typescript
 import { DataGridPro } from '@mui/x-data-grid-pro';
@@ -203,7 +203,7 @@ export const DataGridWrapper: React.FC<DataGridWrapperProps> = ({
             loading={loading}
             slots={{ toolbar: toolbar ? () => toolbar : undefined }}
             onRowClick={(params) => onRowClick?.(params.row)}
-            // 표준 설정
+            // 標準設定
             pagination
             pageSizeOptions={[25, 50, 100]}
             initialState={{
@@ -216,9 +216,9 @@ export const DataGridWrapper: React.FC<DataGridWrapperProps> = ({
 
 ---
 
-## Mutation 패턴
+## Mutation パターン
 
-### 캐시 Invalidation이 있는 Update
+### キャッシュ Invalidation がある Update
 
 ```typescript
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -233,7 +233,7 @@ export const useUpdateEntity = () => {
             api.updateEntity(id, data),
 
         onSuccess: (result, variables) => {
-            // 영향받는 쿼리 invalidate
+            // 影響を受けるクエリを invalidate
             queryClient.invalidateQueries({ queryKey: ['entity', variables.id] });
             queryClient.invalidateQueries({ queryKey: ['entities'] });
 
@@ -246,7 +246,7 @@ export const useUpdateEntity = () => {
     });
 };
 
-// 사용
+// 使用
 const updateEntity = useUpdateEntity();
 
 const handleSave = () => {
@@ -256,44 +256,44 @@ const handleSave = () => {
 
 ---
 
-## 상태 관리 패턴
+## 状態管理パターン
 
-### 서버 상태를 위한 TanStack Query (주요)
+### サーバー状態のための TanStack Query (主要)
 
-**모든 서버 데이터**에 TanStack Query 사용:
+**すべてのサーバーデータ**に TanStack Query 使用:
 - Fetching: useSuspenseQuery
 - Mutations: useMutation
-- 캐싱: 자동
-- 동기화: 내장
+- キャッシング: 自動
+- 同期: 内蔵
 
 ```typescript
-// ✅ 올바름 - 서버 데이터에 TanStack Query
+// ✅ 正しい - サーバーデータに TanStack Query
 const { data: users } = useSuspenseQuery({
     queryKey: ['users'],
     queryFn: () => userApi.getUsers(),
 });
 ```
 
-### UI 상태를 위한 useState
+### UI 状態のための useState
 
-**로컬 UI 상태에만** `useState` 사용:
-- Form 입력 (uncontrolled)
-- Modal 열림/닫힘
-- 선택된 탭
-- 임시 UI 플래그
+**ローカル UI 状態にのみ** `useState` 使用:
+- Form 入力 (uncontrolled)
+- Modal 開閉
+- 選択されたタブ
+- 一時的な UI フラグ
 
 ```typescript
-// ✅ 올바름 - UI 상태에 useState
+// ✅ 正しい - UI 状態に useState
 const [modalOpen, setModalOpen] = useState(false);
 const [selectedTab, setSelectedTab] = useState(0);
 ```
 
-### 전역 클라이언트 상태를 위한 Zustand (최소한으로)
+### グローバルクライアント状態のための Zustand (最小限に)
 
-**전역 클라이언트 상태에만** Zustand 사용:
-- 테마 선호
-- 사이드바 접힘 상태
-- 사용자 선호 (서버에서 오지 않는)
+**グローバルクライアント状態にのみ** Zustand 使用:
+- テーマ設定
+- サイドバー折りたたみ状態
+- ユーザー設定 (サーバーから来ないもの)
 
 ```typescript
 import { create } from 'zustand';
@@ -309,23 +309,23 @@ export const useAppState = create<AppState>((set) => ({
 }));
 ```
 
-**prop drilling 피하기** - 대신 context나 Zustand 사용.
+**prop drilling 避ける** - 代わりに context か Zustand 使用。
 
 ---
 
-## 요약
+## まとめ
 
-**공통 패턴:**
-- ✅ 현재 사용자를 위한 useAuth hook (id, email, roles, username)
-- ✅ forms를 위한 React Hook Form + Zod
-- ✅ 아이콘 + 닫기 버튼이 있는 Dialog
-- ✅ DataGrid wrapper 계약
-- ✅ 캐시 invalidation이 있는 Mutations
-- ✅ 서버 상태를 위한 TanStack Query
-- ✅ UI 상태를 위한 useState
-- ✅ 전역 클라이언트 상태를 위한 Zustand (최소한으로)
+**共通パターン:**
+- ✅ 現在のユーザーのための useAuth hook (id, email, roles, username)
+- ✅ forms のための React Hook Form + Zod
+- ✅ アイコン + 閉じるボタンがある Dialog
+- ✅ DataGrid wrapper 契約
+- ✅ キャッシュ invalidation がある Mutations
+- ✅ サーバー状態のための TanStack Query
+- ✅ UI 状態のための useState
+- ✅ グローバルクライアント状態のための Zustand (最小限に)
 
-**참고:**
-- [data-fetching.md](data-fetching.md) - TanStack Query 패턴
-- [component-patterns.md](component-patterns.md) - 컴포넌트 구조
-- [loading-and-error-states.md](loading-and-error-states.md) - 에러 처리
+**参考:**
+- [data-fetching.md](data-fetching.md) - TanStack Query パターン
+- [component-patterns.md](component-patterns.md) - コンポーネント構造
+- [loading-and-error-states.md](loading-and-error-states.md) - エラー処理

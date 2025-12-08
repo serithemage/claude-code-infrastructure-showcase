@@ -1,30 +1,30 @@
-# Async 패턴과 에러 처리
+# Asyncパターンとエラー処理
 
-async/await 패턴과 커스텀 에러 처리에 대한 완전한 가이드입니다.
+async/awaitパターンとカスタムエラー処理の完全なガイドです。
 
-## 목차
+## 目次
 
-- [Async/Await 모범 사례](#asyncawait-모범-사례)
-- [Promise 에러 처리](#promise-에러-처리)
-- [커스텀 에러 타입](#커스텀-에러-타입)
-- [asyncErrorWrapper 유틸리티](#asyncerrorwrapper-유틸리티)
-- [에러 전파](#에러-전파)
-- [일반적인 Async 함정](#일반적인-async-함정)
+- [Async/Awaitベストプラクティス](#asyncawaitベストプラクティス)
+- [Promiseエラー処理](#promiseエラー処理)
+- [カスタムエラータイプ](#カスタムエラータイプ)
+- [asyncErrorWrapperユーティリティ](#asyncerrorwrapperユーティリティ)
+- [エラー伝播](#エラー伝播)
+- [一般的なAsync落とし穴](#一般的なasync落とし穴)
 
 ---
 
-## Async/Await 모범 사례
+## Async/Awaitベストプラクティス
 
-### 항상 Try-Catch 사용
+### 常にTry-Catch使用
 
 ```typescript
-// ❌ 절대 금지: 처리되지 않은 async 에러
+// ❌ 絶対禁止: 処理されないasyncエラー
 async function fetchData() {
-    const data = await database.query(); // 던지면 처리 안 됨!
+    const data = await database.query(); // スローしても処理されない！
     return data;
 }
 
-// ✅ 항상: try-catch로 감싸기
+// ✅ 常に: try-catchでラップ
 async function fetchData() {
     try {
         const data = await database.query();
@@ -36,10 +36,10 @@ async function fetchData() {
 }
 ```
 
-### .then() 체인 피하기
+### .then()チェーンを避ける
 
 ```typescript
-// ❌ 피하기: Promise 체인
+// ❌ 避ける: Promiseチェーン
 function processData() {
     return fetchData()
         .then(data => transform(data))
@@ -49,7 +49,7 @@ function processData() {
         });
 }
 
-// ✅ 선호: Async/await
+// ✅ 推奨: Async/await
 async function processData() {
     try {
         const data = await fetchData();
@@ -64,12 +64,12 @@ async function processData() {
 
 ---
 
-## Promise 에러 처리
+## Promiseエラー処理
 
-### 병렬 작업
+### 並列操作
 
 ```typescript
-// ✅ Promise.all에서 에러 처리
+// ✅ Promise.allでエラー処理
 try {
     const [users, profiles, settings] = await Promise.all([
         userService.getAll(),
@@ -77,12 +77,12 @@ try {
         settingsService.getAll(),
     ]);
 } catch (error) {
-    // 하나가 실패하면 전체 실패
+    // 1つが失敗すると全体が失敗
     Sentry.captureException(error);
     throw error;
 }
 
-// ✅ Promise.allSettled로 개별 에러 처리
+// ✅ Promise.allSettledで個別エラー処理
 const results = await Promise.allSettled([
     userService.getAll(),
     profileService.getAll(),
@@ -100,12 +100,12 @@ results.forEach((result, index) => {
 
 ---
 
-## 커스텀 에러 타입
+## カスタムエラータイプ
 
-### 커스텀 에러 정의
+### カスタムエラー定義
 
 ```typescript
-// 기본 에러 클래스
+// 基底エラークラス
 export class AppError extends Error {
     constructor(
         message: string,
@@ -119,7 +119,7 @@ export class AppError extends Error {
     }
 }
 
-// 특정 에러 타입들
+// 特定エラータイプ
 export class ValidationError extends AppError {
     constructor(message: string) {
         super(message, 'VALIDATION_ERROR', 400);
@@ -145,10 +145,10 @@ export class ConflictError extends AppError {
 }
 ```
 
-### 사용법
+### 使用法
 
 ```typescript
-// 특정 에러 던지기
+// 特定エラーをスロー
 if (!user) {
     throw new NotFoundError('User not found');
 }
@@ -157,7 +157,7 @@ if (user.age < 18) {
     throw new ValidationError('User must be 18+');
 }
 
-// Error boundary가 처리
+// Error boundaryが処理
 function errorBoundary(error, req, res, next) {
     if (error instanceof AppError) {
         return res.status(error.statusCode).json({
@@ -168,7 +168,7 @@ function errorBoundary(error, req, res, next) {
         });
     }
 
-    // 알 수 없는 에러
+    // 不明なエラー
     Sentry.captureException(error);
     res.status(500).json({ error: { message: 'Internal server error' } });
 }
@@ -176,9 +176,9 @@ function errorBoundary(error, req, res, next) {
 
 ---
 
-## asyncErrorWrapper 유틸리티
+## asyncErrorWrapperユーティリティ
 
-### 패턴
+### パターン
 
 ```typescript
 export function asyncErrorWrapper(
@@ -194,16 +194,16 @@ export function asyncErrorWrapper(
 }
 ```
 
-### 사용법
+### 使用法
 
 ```typescript
-// wrapper 없이 - 에러가 처리되지 않을 수 있음
+// wrapperなし - エラーが処理されない可能性
 router.get('/users', async (req, res) => {
-    const users = await userService.getAll(); // 던지면 처리 안 됨!
+    const users = await userService.getAll(); // スローしても処理されない！
     res.json(users);
 });
 
-// wrapper 사용 - 에러가 캐치됨
+// wrapper使用 - エラーがキャッチされる
 router.get('/users', asyncErrorWrapper(async (req, res) => {
     const users = await userService.getAll();
     res.json(users);
@@ -212,18 +212,18 @@ router.get('/users', asyncErrorWrapper(async (req, res) => {
 
 ---
 
-## 에러 전파
+## エラー伝播
 
-### 적절한 에러 체인
+### 適切なエラーチェーン
 
 ```typescript
-// ✅ 스택을 따라 에러 전파
+// ✅ スタックを通じてエラーを伝播
 async function repositoryMethod() {
     try {
         return await PrismaService.main.user.findMany();
     } catch (error) {
         Sentry.captureException(error, { tags: { layer: 'repository' } });
-        throw error; // service로 전파
+        throw error; // serviceに伝播
     }
 }
 
@@ -232,7 +232,7 @@ async function serviceMethod() {
         return await repositoryMethod();
     } catch (error) {
         Sentry.captureException(error, { tags: { layer: 'service' } });
-        throw error; // controller로 전파
+        throw error; // controllerに伝播
     }
 }
 
@@ -241,25 +241,25 @@ async function controllerMethod(req, res) {
         const result = await serviceMethod();
         res.json(result);
     } catch (error) {
-        this.handleError(error, res, 'controllerMethod'); // 최종 핸들러
+        this.handleError(error, res, 'controllerMethod'); // 最終ハンドラー
     }
 }
 ```
 
 ---
 
-## 일반적인 Async 함정
+## 一般的なAsync落とし穴
 
-### Fire and Forget (나쁜 패턴)
+### Fire and Forget（悪いパターン）
 
 ```typescript
-// ❌ 절대 금지: Fire and forget
+// ❌ 絶対禁止: Fire and forget
 async function processRequest(req, res) {
-    sendEmail(user.email); // async로 실행, 에러 처리 안 됨!
+    sendEmail(user.email); // async実行、エラー処理されない！
     res.json({ success: true });
 }
 
-// ✅ 항상: await 또는 처리
+// ✅ 常に: awaitまたは処理
 async function processRequest(req, res) {
     try {
         await sendEmail(user.email);
@@ -270,7 +270,7 @@ async function processRequest(req, res) {
     }
 }
 
-// ✅ 또는: 의도적인 백그라운드 작업
+// ✅ または: 意図的なバックグラウンドタスク
 async function processRequest(req, res) {
     sendEmail(user.email).catch(error => {
         Sentry.captureException(error);
@@ -279,10 +279,10 @@ async function processRequest(req, res) {
 }
 ```
 
-### 처리되지 않은 Rejection
+### 処理されないRejection
 
 ```typescript
-// ✅ 처리되지 않은 rejection을 위한 글로벌 핸들러
+// ✅ 処理されないrejectionのためのグローバルハンドラー
 process.on('unhandledRejection', (reason, promise) => {
     Sentry.captureException(reason, {
         tags: { type: 'unhandled_rejection' }
@@ -301,7 +301,7 @@ process.on('uncaughtException', (error) => {
 
 ---
 
-**관련 파일:**
+**関連ファイル:**
 - [SKILL.md](SKILL.md)
 - [sentry-and-monitoring.md](sentry-and-monitoring.md)
 - [complete-examples.md](complete-examples.md)

@@ -1,17 +1,17 @@
-# 완전한 예제
+# 完全な例
 
-React.FC, lazy loading, Suspense, useSuspenseQuery, 스타일링, 라우팅, 에러 처리 등 모든 최신 패턴을 결합한 전체 작동 예제입니다.
+React.FC、lazy loading、Suspense、useSuspenseQuery、スタイリング、ルーティング、エラー処理など、すべての最新パターンを組み合わせた完全な動作例です。
 
 ---
 
-## 예제 1: 완전한 최신 컴포넌트
+## 例 1: 完全な最新コンポーネント
 
-결합: React.FC, useSuspenseQuery, cache-first, useCallback, 스타일링, 에러 처리
+組み合わせ: React.FC、useSuspenseQuery、cache-first、useCallback、スタイリング、エラー処理
 
 ```typescript
 /**
- * 사용자 프로필 표시 컴포넌트
- * Suspense와 TanStack Query를 사용한 최신 패턴 시연
+ * ユーザープロファイル表示コンポーネント
+ * Suspense と TanStack Query を使用した最新パターンのデモ
  */
 import React, { useState, useCallback, useMemo } from 'react';
 import { Box, Paper, Typography, Button, Avatar } from '@mui/material';
@@ -21,7 +21,7 @@ import { userApi } from '../api/userApi';
 import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
 import type { User } from '~types/user';
 
-// 스타일 객체
+// スタイルオブジェクト
 const componentStyles: Record<string, SxProps<Theme>> = {
     container: {
         p: 3,
@@ -56,7 +56,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ userId, onUpdate }) =>
     const { showSuccess, showError } = useMuiSnackbar();
     const [isEditing, setIsEditing] = useState(false);
 
-    // Suspense 쿼리 - isLoading 불필요!
+    // Suspense クエリ - isLoading 不要！
     const { data: user } = useSuspenseQuery({
         queryKey: ['user', userId],
         queryFn: () => userApi.getUser(userId),
@@ -80,12 +80,12 @@ export const UserProfile: React.FC<UserProfileProps> = ({ userId, onUpdate }) =>
         },
     });
 
-    // Memoized 계산 값
+    // Memoized 計算値
     const fullName = useMemo(() => {
         return `${user.firstName} ${user.lastName}`;
     }, [user.firstName, user.lastName]);
 
-    // useCallback을 사용한 이벤트 핸들러
+    // useCallback を使用したイベントハンドラ
     const handleEdit = useCallback(() => {
         setIsEditing(true);
     }, []);
@@ -145,7 +145,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ userId, onUpdate }) =>
 export default UserProfile;
 ```
 
-**사용:**
+**使用法:**
 ```typescript
 <SuspenseLoader>
     <UserProfile userId='123' onUpdate={() => console.log('Updated')} />
@@ -154,34 +154,34 @@ export default UserProfile;
 
 ---
 
-## 예제 2: 완전한 Feature 구조
+## 例 2: 完全な Feature 構造
 
-`features/posts/` 기반 실제 예시:
+`features/posts/` ベースの実際の例:
 
 ```
 features/
   users/
     api/
-      userApi.ts                # API 서비스 레이어
+      userApi.ts                # API サービスレイヤー
     components/
-      UserProfile.tsx           # 메인 컴포넌트 (예제 1에서)
-      UserList.tsx              # 리스트 컴포넌트
-      UserForm.tsx              # 폼 컴포넌트
+      UserProfile.tsx           # メインコンポーネント (例 1 より)
+      UserList.tsx              # リストコンポーネント
+      UserForm.tsx              # フォームコンポーネント
       modals/
-        DeleteUserModal.tsx     # 모달 컴포넌트
+        DeleteUserModal.tsx     # モーダルコンポーネント
     hooks/
-      useSuspenseUser.ts        # Suspense 쿼리 hook
+      useSuspenseUser.ts        # Suspense クエリ hook
       useUserMutations.ts       # Mutation hooks
-      useUserPermissions.ts     # Feature별 hook
+      useUserPermissions.ts     # Feature 別 hook
     helpers/
-      userHelpers.ts            # 유틸리티 함수
-      validation.ts             # 유효성 검사 로직
+      userHelpers.ts            # ユーティリティ関数
+      validation.ts             # 検証ロジック
     types/
-      index.ts                  # TypeScript 인터페이스
+      index.ts                  # TypeScript インターフェース
     index.ts                    # Public API exports
 ```
 
-### API 서비스 (userApi.ts)
+### API サービス (userApi.ts)
 
 ```typescript
 import apiClient from '@/lib/apiClient';
@@ -234,12 +234,12 @@ export function useSuspenseUsers() {
     return useSuspenseQuery<User[], Error>({
         queryKey: ['users'],
         queryFn: () => userApi.getUsers(),
-        staleTime: 1 * 60 * 1000,  // 리스트에는 더 짧게
+        staleTime: 1 * 60 * 1000,  // リストにはより短く
     });
 }
 ```
 
-### 타입 (types/index.ts)
+### 型 (types/index.ts)
 
 ```typescript
 export interface User {
@@ -267,7 +267,7 @@ export type UpdateUserPayload = Partial<Omit<User, 'id' | 'createdAt' | 'updated
 ### Public Exports (index.ts)
 
 ```typescript
-// 컴포넌트 export
+// コンポーネント export
 export { UserProfile } from './components/UserProfile';
 export { UserList } from './components/UserList';
 
@@ -278,25 +278,25 @@ export { useUserMutations } from './hooks/useUserMutations';
 // API export
 export { userApi } from './api/userApi';
 
-// 타입 export
+// 型 export
 export type { User, CreateUserPayload, UpdateUserPayload } from './types';
 ```
 
 ---
 
-## 예제 3: Lazy Loading이 있는 완전한 Route
+## 例 3: Lazy Loading がある完全な Route
 
 ```typescript
 /**
- * 사용자 프로필 route
- * 경로: /users/:userId
+ * ユーザープロファイル route
+ * パス: /users/:userId
  */
 
 import { createFileRoute } from '@tanstack/react-router';
 import { lazy } from 'react';
 import { SuspenseLoader } from '~components/SuspenseLoader';
 
-// UserProfile 컴포넌트 lazy load
+// UserProfile コンポーネント lazy load
 const UserProfile = lazy(() =>
     import('@/features/users/components/UserProfile').then(
         (module) => ({ default: module.UserProfile })
@@ -328,7 +328,7 @@ export default UserProfilePage;
 
 ---
 
-## 예제 4: 검색과 필터링이 있는 리스트
+## 例 4: 検索とフィルタリングがあるリスト
 
 ```typescript
 import React, { useState, useMemo } from 'react';
@@ -346,7 +346,7 @@ export const UserList: React.FC = () => {
         queryFn: () => userApi.getUsers(),
     });
 
-    // Memoized 필터링
+    // Memoized フィルタリング
     const filteredUsers = useMemo(() => {
         if (!debouncedSearch) return users;
 
@@ -380,7 +380,7 @@ export const UserList: React.FC = () => {
 
 ---
 
-## 예제 5: 유효성 검사가 있는 Form
+## 例 5: 検証がある Form
 
 ```typescript
 import React from 'react';
@@ -493,14 +493,14 @@ export default CreateUserForm;
 
 ---
 
-## 예제 6: Lazy Loading이 있는 부모 컨테이너
+## 例 6: Lazy Loading がある親コンテナ
 
 ```typescript
 import React from 'react';
 import { Box } from '@mui/material';
 import { SuspenseLoader } from '~components/SuspenseLoader';
 
-// 무거운 컴포넌트 lazy load
+// 重いコンポーネント lazy load
 const UserList = React.lazy(() => import('./UserList'));
 const UserStats = React.lazy(() => import('./UserStats'));
 const ActivityFeed = React.lazy(() => import('./ActivityFeed'));
@@ -532,16 +532,16 @@ export const UserDashboard: React.FC = () => {
 export default UserDashboard;
 ```
 
-**장점:**
-- 각 섹션이 독립적으로 로드
-- 사용자가 부분 콘텐츠를 더 빨리 볼 수 있음
-- 더 나은 체감 성능
+**利点:**
+- 各セクションが独立してロード
+- ユーザーが部分コンテンツをより早く見れる
+- より良い体感パフォーマンス
 
 ---
 
-## 예제 7: Cache-First 전략 구현
+## 例 7: Cache-First 戦略実装
 
-useSuspensePost.ts 기반 완전한 예제:
+useSuspensePost.ts ベースの完全な例:
 
 ```typescript
 import { useSuspenseQuery, useQueryClient } from '@tanstack/react-query';
@@ -549,8 +549,8 @@ import { postApi } from '../api/postApi';
 import type { Post } from '../types';
 
 /**
- * Cache-first 전략이 있는 스마트 post hook
- * 가능할 때 그리드 캐시의 데이터 재사용
+ * Cache-first 戦略があるスマート post hook
+ * 可能な場合グリッドキャッシュのデータ再利用
  */
 export function useSuspensePost(blogId: number, postId: number) {
     const queryClient = useQueryClient();
@@ -558,7 +558,7 @@ export function useSuspensePost(blogId: number, postId: number) {
     return useSuspenseQuery<Post, Error>({
         queryKey: ['post', blogId, postId],
         queryFn: async () => {
-            // 전략 1: 그리드 캐시 먼저 확인 (API 호출 방지)
+            // 戦略 1: グリッドキャッシュをまず確認 (API 呼び出し防止)
             const gridCache = queryClient.getQueryData<{ rows: Post[] }>([
                 'posts-v2',
                 blogId,
@@ -575,54 +575,54 @@ export function useSuspensePost(blogId: number, postId: number) {
                 );
 
                 if (cached) {
-                    return cached;  // 캐시에서 반환 - API 호출 없음!
+                    return cached;  // キャッシュから返す - API 呼び出しなし！
                 }
             }
 
-            // 전략 2: 캐시에 없음, API에서 fetch
+            // 戦略 2: キャッシュにない、API から fetch
             return postApi.getPost(blogId, postId);
         },
-        staleTime: 5 * 60 * 1000,       // 5분 동안 fresh
-        gcTime: 10 * 60 * 1000,          // 10분 동안 캐시
-        refetchOnWindowFocus: false,     // 포커스 시 refetch 안 함
+        staleTime: 5 * 60 * 1000,       // 5分間 fresh
+        gcTime: 10 * 60 * 1000,          // 10分間キャッシュ
+        refetchOnWindowFocus: false,     // フォーカス時 refetch しない
     });
 }
 ```
 
-**이 패턴을 사용하는 이유:**
-- API 전에 그리드 캐시 확인
-- 사용자가 그리드에서 왔으면 즉시 데이터
-- 캐시에 없으면 API로 fallback
-- 설정 가능한 캐시 시간
+**このパターンを使用する理由:**
+- API 前にグリッドキャッシュ確認
+- ユーザーがグリッドから来たら即座にデータ
+- キャッシュにない場合は API へ fallback
+- 設定可能なキャッシュ時間
 
 ---
 
-## 예제 8: 완전한 Route 파일
+## 例 8: 完全な Route ファイル
 
 ```typescript
 /**
  * Project catalog route
- * 경로: /project-catalog
+ * パス: /project-catalog
  */
 
 import { createFileRoute } from '@tanstack/react-router';
 import { lazy } from 'react';
 
-// PostTable 컴포넌트 lazy load
+// PostTable コンポーネント lazy load
 const PostTable = lazy(() =>
     import('@/features/posts/components/PostTable').then(
         (module) => ({ default: module.PostTable })
     )
 );
 
-// Route 상수
+// Route 定数
 const PROJECT_CATALOG_FORM_ID = 744;
 const PROJECT_CATALOG_PROJECT_ID = 225;
 
 export const Route = createFileRoute('/project-catalog/')({
     component: ProjectCatalogPage,
     loader: () => ({
-        crumb: 'Projects',  // Breadcrumb 제목
+        crumb: 'Projects',  // Breadcrumb タイトル
     }),
 });
 
@@ -642,7 +642,7 @@ export default ProjectCatalogPage;
 
 ---
 
-## 예제 9: Form이 있는 Dialog
+## 例 9: Form がある Dialog
 
 ```typescript
 import React from 'react';
@@ -744,7 +744,7 @@ export const AddUserDialog: React.FC<AddUserDialogProps> = ({
 
 ---
 
-## 예제 10: 병렬 데이터 Fetching
+## 例 10: 並列データ Fetching
 
 ```typescript
 import React from 'react';
@@ -755,7 +755,7 @@ import { statsApi } from '../api/statsApi';
 import { activityApi } from '../api/activityApi';
 
 export const Dashboard: React.FC = () => {
-    // Suspense로 모든 데이터를 병렬로 fetch
+    // Suspense ですべてのデータを並列で fetch
     const [statsQuery, usersQuery, activityQuery] = useSuspenseQueries({
         queries: [
             {
@@ -801,7 +801,7 @@ export const Dashboard: React.FC = () => {
     );
 };
 
-// Suspense와 함께 사용
+// Suspense と一緒に使用
 <SuspenseLoader>
     <Dashboard />
 </SuspenseLoader>
@@ -809,7 +809,7 @@ export const Dashboard: React.FC = () => {
 
 ---
 
-## 예제 11: Optimistic Update
+## 例 11: Optimistic Update
 
 ```typescript
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -823,13 +823,13 @@ export const useToggleUserStatus = () => {
 
         // Optimistic update
         onMutate: async (userId) => {
-            // 진행 중인 refetch 취소
+            // 進行中の refetch キャンセル
             await queryClient.cancelQueries({ queryKey: ['users'] });
 
-            // 이전 값 스냅샷
+            // 以前の値のスナップショット
             const previousUsers = queryClient.getQueryData<User[]>(['users']);
 
-            // Optimistically UI 업데이트
+            // Optimistically UI 更新
             queryClient.setQueryData<User[]>(['users'], (old) => {
                 return old?.map(user =>
                     user.id === userId
@@ -841,12 +841,12 @@ export const useToggleUserStatus = () => {
             return { previousUsers };
         },
 
-        // 에러 시 롤백
+        // エラー時ロールバック
         onError: (err, userId, context) => {
             queryClient.setQueryData(['users'], context?.previousUsers);
         },
 
-        // mutation 후 refetch
+        // mutation 後 refetch
         onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ['users'] });
         },
@@ -856,17 +856,17 @@ export const useToggleUserStatus = () => {
 
 ---
 
-## 요약
+## まとめ
 
-**핵심 포인트:**
+**核心ポイント:**
 
-1. **컴포넌트 패턴**: React.FC + lazy + Suspense + useSuspenseQuery
-2. **Feature 구조**: 구성된 하위 디렉토리 (api/, components/, hooks/ 등)
-3. **라우팅**: Lazy loading이 있는 폴더 기반
-4. **데이터 Fetching**: Cache-first 전략이 있는 useSuspenseQuery
-5. **Forms**: React Hook Form + Zod 유효성 검사
-6. **에러 처리**: useMuiSnackbar + onError 콜백
-7. **성능**: useMemo, useCallback, React.memo, debouncing
-8. **스타일링**: 100줄 미만 인라인, sx prop, MUI v7 문법
+1. **コンポーネントパターン**: React.FC + lazy + Suspense + useSuspenseQuery
+2. **Feature 構造**: 構成されたサブディレクトリ (api/, components/, hooks/ など)
+3. **ルーティング**: Lazy loading があるフォルダベース
+4. **データ Fetching**: Cache-first 戦略がある useSuspenseQuery
+5. **Forms**: React Hook Form + Zod 検証
+6. **エラー処理**: useMuiSnackbar + onError コールバック
+7. **パフォーマンス**: useMemo、useCallback、React.memo、debouncing
+8. **スタイリング**: 100行未満インライン、sx prop、MUI v7 文法
 
-**각 패턴의 자세한 설명은 다른 리소스 참조.**
+**各パターンの詳細説明は他のリソース参照。**

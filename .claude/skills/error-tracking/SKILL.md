@@ -1,64 +1,64 @@
 ---
 name: error-tracking
-description: 프로젝트 서비스에 Sentry v8 error tracking 및 performance monitoring 추가. 이 skill은 error handling 추가, 새 controllers 생성, cron jobs 계측, 데이터베이스 성능 추적 시 사용합니다. 모든 에러는 반드시 Sentry에 캡처되어야 합니다 - 예외 없음.
+description: プロジェクトサービスに Sentry v8 error tracking および performance monitoring 追加。この skill は error handling 追加、新 controllers 生成、cron jobs 計測、データベースパフォーマンス追跡時に使用します。すべてのエラーは必ず Sentry にキャプチャされる必要があります - 例外なし。
 ---
 
-# 프로젝트 Sentry 통합 Skill
+# プロジェクト Sentry 統合 Skill
 
-## 목적
-이 skill은 Sentry v8 패턴을 따라 모든 프로젝트 서비스에서 종합적인 Sentry error tracking 및 performance monitoring을 강제합니다.
+## 目的
+この skill は Sentry v8 パターンに従ってすべてのプロジェクトサービスで包括的な Sentry error tracking および performance monitoring を強制します。
 
-## 이 Skill 사용 시점
-- 어떤 코드에든 error handling 추가
-- 새 controllers 또는 routes 생성
-- Cron jobs 계측
-- 데이터베이스 성능 추적
-- Performance spans 추가
-- Workflow errors 처리
+## この Skill 使用時点
+- どのコードにでも error handling 追加
+- 新 controllers または routes 生成
+- Cron jobs 計測
+- データベースパフォーマンス追跡
+- Performance spans 追加
+- Workflow errors 処理
 
-## 🚨 핵심 규칙
+## 🚨 核心ルール
 
-**모든 에러는 반드시 Sentry에 캡처되어야 합니다** - 예외 없음. console.error만 단독으로 사용하지 마세요.
+**すべてのエラーは必ず Sentry にキャプチャされる必要があります** - 例外なし。console.error のみを単独で使用しないでください。
 
-## 현재 상태
+## 現在の状態
 
-### Form Service ✅ 완료
-- Sentry v8 완전 통합
-- 모든 workflow errors 추적됨
-- SystemActionQueueProcessor 계측됨
-- 테스트 엔드포인트 사용 가능
+### Form Service ✅ 完了
+- Sentry v8 完全統合
+- すべての workflow errors 追跡済み
+- SystemActionQueueProcessor 計測済み
+- テストエンドポイント利用可能
 
-### Email Service 🟡 진행 중
-- Phase 1-2 완료 (6/22 작업)
-- 189개 ErrorLogger.log() 호출 남음
+### Email Service 🟡 進行中
+- Phase 1-2 完了 (6/22 作業)
+- 189個の ErrorLogger.log() 呼び出し残り
 
-## Sentry 통합 패턴
+## Sentry 統合パターン
 
 ### 1. Controller Error Handling
 
 ```typescript
-// ✅ 올바름 - BaseController 사용
+// ✅ 正しい - BaseController 使用
 import { BaseController } from '../controllers/BaseController';
 
 export class MyController extends BaseController {
     async myMethod() {
         try {
-            // ... 코드
+            // ... コード
         } catch (error) {
-            this.handleError(error, 'myMethod'); // 자동으로 Sentry에 전송
+            this.handleError(error, 'myMethod'); // 自動的に Sentry に送信
         }
     }
 }
 ```
 
-### 2. Route Error Handling (BaseController 없이)
+### 2. Route Error Handling (BaseController なし)
 
 ```typescript
 import * as Sentry from '@sentry/node';
 
 router.get('/route', async (req, res) => {
     try {
-        // ... 코드
+        // ... コード
     } catch (error) {
         Sentry.captureException(error, {
             tags: { route: '/route', method: 'GET' },
@@ -74,7 +74,7 @@ router.get('/route', async (req, res) => {
 ```typescript
 import { WorkflowSentryHelper } from '../workflow/utils/sentryHelper';
 
-// ✅ 올바름 - WorkflowSentryHelper 사용
+// ✅ 正しい - WorkflowSentryHelper 使用
 WorkflowSentryHelper.captureWorkflowError(error, {
     workflowCode: 'DHS_CLOSEOUT',
     instanceId: 123,
@@ -85,11 +85,11 @@ WorkflowSentryHelper.captureWorkflowError(error, {
 });
 ```
 
-### 4. Cron Jobs (필수 패턴)
+### 4. Cron Jobs (必須パターン)
 
 ```typescript
 #!/usr/bin/env node
-// shebang 다음 첫 번째 줄 - 중요!
+// shebang 次の最初の行 - 重要！
 import '../instrument';
 import * as Sentry from '@sentry/node';
 
@@ -103,7 +103,7 @@ async function main() {
         }
     }, async () => {
         try {
-            // cron job 로직
+            // cron job ロジック
         } catch (error) {
             Sentry.captureException(error, {
                 tags: {
@@ -119,7 +119,7 @@ async function main() {
 
 main()
     .then(() => {
-        console.log('[Job] 성공적으로 완료');
+        console.log('[Job] 正常に完了');
         process.exit(0);
     })
     .catch((error) => {
@@ -133,7 +133,7 @@ main()
 ```typescript
 import { DatabasePerformanceMonitor } from '../utils/databasePerformance';
 
-// ✅ 올바름 - 데이터베이스 작업 래핑
+// ✅ 正しい - データベース操作をラップ
 const result = await DatabasePerformanceMonitor.withPerformanceTracking(
     'findMany',
     'UserProfile',
@@ -145,7 +145,7 @@ const result = await DatabasePerformanceMonitor.withPerformanceTracking(
 );
 ```
 
-### 6. Spans를 사용한 Async 작업
+### 6. Spans を使用した Async 作業
 
 ```typescript
 import * as Sentry from '@sentry/node';
@@ -157,33 +157,33 @@ const result = await Sentry.startSpan({
         'custom.attribute': 'value'
     }
 }, async () => {
-    // async 작업
+    // async 作業
     return await someAsyncOperation();
 });
 ```
 
-## 에러 레벨
+## エラーレベル
 
-적절한 심각도 수준 사용:
+適切な重大度レベルを使用:
 
-- **fatal**: 시스템 사용 불가 (데이터베이스 다운, 핵심 서비스 장애)
-- **error**: 작업 실패, 즉시 주의 필요
-- **warning**: 복구 가능한 문제, 성능 저하
-- **info**: 정보성 메시지, 성공적인 작업
-- **debug**: 상세 디버깅 정보 (개발 환경만)
+- **fatal**: システム使用不可 (データベースダウン、コアサービス障害)
+- **error**: 操作失敗、即座の注意が必要
+- **warning**: 回復可能な問題、パフォーマンス低下
+- **info**: 情報メッセージ、正常な操作
+- **debug**: 詳細デバッグ情報 (開発環境のみ)
 
-## 필수 Context
+## 必須 Context
 
 ```typescript
 import * as Sentry from '@sentry/node';
 
 Sentry.withScope((scope) => {
-    // 사용 가능한 경우 항상 포함
+    // 使用可能な場合は常に含める
     scope.setUser({ id: userId });
-    scope.setTag('service', 'form'); // 또는 'email', 'users' 등
+    scope.setTag('service', 'form'); // または 'email', 'users' など
     scope.setTag('environment', process.env.NODE_ENV);
 
-    // 작업별 context 추가
+    // 操作別 context 追加
     scope.setContext('operation', {
         type: 'workflow.start',
         workflowCode: 'DHS_CLOSEOUT',
@@ -194,11 +194,11 @@ Sentry.withScope((scope) => {
 });
 ```
 
-## 서비스별 통합
+## サービス別統合
 
 ### Form Service
 
-**위치**: `./blog-api/src/instrument.ts`
+**場所**: `./blog-api/src/instrument.ts`
 
 ```typescript
 import * as Sentry from '@sentry/node';
@@ -215,14 +215,14 @@ Sentry.init({
 });
 ```
 
-**주요 Helper**:
-- `WorkflowSentryHelper` - Workflow 전용 에러
-- `DatabasePerformanceMonitor` - DB 쿼리 추적
+**主要 Helper**:
+- `WorkflowSentryHelper` - Workflow 専用エラー
+- `DatabasePerformanceMonitor` - DB クエリ追跡
 - `BaseController` - Controller error handling
 
 ### Email Service
 
-**위치**: `./notifications/src/instrument.ts`
+**場所**: `./notifications/src/instrument.ts`
 
 ```typescript
 import * as Sentry from '@sentry/node';
@@ -239,11 +239,11 @@ Sentry.init({
 });
 ```
 
-**주요 Helper**:
-- `EmailSentryHelper` - 이메일 전용 에러
+**主要 Helper**:
+- `EmailSentryHelper` - Email 専用エラー
 - `BaseController` - Controller error handling
 
-## 설정 (config.ini)
+## 設定 (config.ini)
 
 ```ini
 [sentry]
@@ -260,116 +260,116 @@ dbErrorCapture = true
 enableN1Detection = true
 ```
 
-## Sentry 통합 테스트
+## Sentry 統合テスト
 
-### Form Service 테스트 엔드포인트
+### Form Service テストエンドポイント
 
 ```bash
-# 기본 error capture 테스트
+# 基本 error capture テスト
 curl http://localhost:3002/blog-api/api/sentry/test-error
 
-# Workflow error 테스트
+# Workflow error テスト
 curl http://localhost:3002/blog-api/api/sentry/test-workflow-error
 
-# Database performance 테스트
+# Database performance テスト
 curl http://localhost:3002/blog-api/api/sentry/test-database-performance
 
-# Error boundary 테스트
+# Error boundary テスト
 curl http://localhost:3002/blog-api/api/sentry/test-error-boundary
 ```
 
-### Email Service 테스트 엔드포인트
+### Email Service テストエンドポイント
 
 ```bash
-# 기본 error capture 테스트
+# 基本 error capture テスト
 curl http://localhost:3003/notifications/api/sentry/test-error
 
-# Email 전용 error 테스트
+# Email 専用 error テスト
 curl http://localhost:3003/notifications/api/sentry/test-email-error
 
-# Performance tracking 테스트
+# Performance tracking テスト
 curl http://localhost:3003/notifications/api/sentry/test-performance
 ```
 
 ## Performance Monitoring
 
-### 요구 사항
+### 要件
 
-1. **모든 API 엔드포인트**는 트랜잭션 추적 필수
-2. **100ms 초과 데이터베이스 쿼리**는 자동으로 플래그됨
-3. **N+1 쿼리**는 감지 및 보고됨
-4. **Cron jobs**는 실행 시간 추적 필수
+1. **すべての API エンドポイント**はトランザクション追跡必須
+2. **100ms 超過データベースクエリ**は自動的にフラグ付け
+3. **N+1 クエリ**は検知および報告
+4. **Cron jobs**は実行時間追跡必須
 
 ### Transaction Tracking
 
 ```typescript
 import * as Sentry from '@sentry/node';
 
-// Express routes용 자동 트랜잭션 추적
+// Express routes 用自動トランザクション追跡
 app.use(Sentry.Handlers.requestHandler());
 app.use(Sentry.Handlers.tracingHandler());
 
-// 커스텀 작업용 수동 트랜잭션
+// カスタム操作用手動トランザクション
 const transaction = Sentry.startTransaction({
     op: 'operation.type',
     name: 'Operation Name',
 });
 
 try {
-    // 작업 수행
+    // 操作実行
 } finally {
     transaction.finish();
 }
 ```
 
-## 피해야 할 일반적인 실수
+## 避けるべき一般的な間違い
 
-❌ **절대** Sentry 없이 console.error만 사용하지 마세요
-❌ **절대** 에러를 조용히 삼키지 마세요
-❌ **절대** 에러 context에 민감한 데이터 노출하지 마세요
-❌ **절대** context 없이 일반적인 에러 메시지 사용하지 마세요
-❌ **절대** async 작업에서 error handling 건너뛰지 마세요
-❌ **절대** cron jobs에서 instrument.ts를 첫 번째 줄에 import하는 것 잊지 마세요
+❌ **絶対** Sentry なしで console.error だけを使用しないでください
+❌ **絶対** エラーを静かに飲み込まないでください
+❌ **絶対** エラー context に機密データを露出しないでください
+❌ **絶対** context なしで一般的なエラーメッセージを使用しないでください
+❌ **絶対** async 操作で error handling をスキップしないでください
+❌ **絶対** cron jobs で instrument.ts を最初の行に import することを忘れないでください
 
-## 구현 체크리스트
+## 実装チェックリスト
 
-새 코드에 Sentry 추가 시:
+新コードに Sentry 追加時:
 
-- [ ] Sentry 또는 적절한 helper 임포트됨
-- [ ] 모든 try/catch 블록이 Sentry에 캡처함
-- [ ] 에러에 의미 있는 context 추가됨
-- [ ] 적절한 에러 레벨 사용됨
-- [ ] 에러 메시지에 민감한 데이터 없음
-- [ ] 느린 작업에 performance tracking 추가됨
-- [ ] Error handling 경로 테스트됨
-- [ ] Cron jobs의 경우: instrument.ts가 첫 번째로 임포트됨
+- [ ] Sentry または適切な helper がインポート済み
+- [ ] すべての try/catch ブロックが Sentry にキャプチャ
+- [ ] エラーに意味のある context 追加済み
+- [ ] 適切なエラーレベル使用済み
+- [ ] エラーメッセージに機密データなし
+- [ ] 遅い操作に performance tracking 追加済み
+- [ ] Error handling パステスト済み
+- [ ] Cron jobs の場合: instrument.ts が最初にインポート済み
 
-## 핵심 파일
+## 核心ファイル
 
 ### Form Service
-- `/blog-api/src/instrument.ts` - Sentry 초기화
-- `/blog-api/src/workflow/utils/sentryHelper.ts` - Workflow 에러
-- `/blog-api/src/utils/databasePerformance.ts` - DB 모니터링
-- `/blog-api/src/controllers/BaseController.ts` - Controller 베이스
+- `/blog-api/src/instrument.ts` - Sentry 初期化
+- `/blog-api/src/workflow/utils/sentryHelper.ts` - Workflow エラー
+- `/blog-api/src/utils/databasePerformance.ts` - DB モニタリング
+- `/blog-api/src/controllers/BaseController.ts` - Controller ベース
 
 ### Email Service
-- `/notifications/src/instrument.ts` - Sentry 초기화
-- `/notifications/src/utils/EmailSentryHelper.ts` - 이메일 에러
-- `/notifications/src/controllers/BaseController.ts` - Controller 베이스
+- `/notifications/src/instrument.ts` - Sentry 初期化
+- `/notifications/src/utils/EmailSentryHelper.ts` - Email エラー
+- `/notifications/src/controllers/BaseController.ts` - Controller ベース
 
-### 설정
-- `/blog-api/config.ini` - Form service 설정
-- `/notifications/config.ini` - Email service 설정
-- `/sentry.ini` - 공유 Sentry 설정
+### 設定
+- `/blog-api/config.ini` - Form service 設定
+- `/notifications/config.ini` - Email service 設定
+- `/sentry.ini` - 共有 Sentry 設定
 
-## 문서
+## ドキュメント
 
-- 전체 구현: `/dev/active/email-sentry-integration/`
-- Form service 문서: `/blog-api/docs/sentry-integration.md`
-- Email service 문서: `/notifications/docs/sentry-integration.md`
+- 完全実装: `/dev/active/email-sentry-integration/`
+- Form service ドキュメント: `/blog-api/docs/sentry-integration.md`
+- Email service ドキュメント: `/notifications/docs/sentry-integration.md`
 
-## 관련 Skills
+## 関連 Skills
 
-- 데이터베이스 작업 전 **database-verification** 사용
-- Workflow error context용 **workflow-builder** 사용
-- 데이터베이스 error handling용 **database-scripts** 사용
+- データベース操作前に **database-verification** 使用
+- Workflow error context 用 **workflow-builder** 使用
+- データベース error handling 用 **database-scripts** 使用

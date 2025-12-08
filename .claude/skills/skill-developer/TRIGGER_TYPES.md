@@ -1,28 +1,28 @@
-# 트리거 유형 - 종합 가이드
+# トリガータイプ - 包括的ガイド
 
-Claude Code의 skill 자동 활성화 시스템에서 skill 트리거를 설정하기 위한 종합 참조 문서입니다.
+Claude Codeのskill自動活性化システムでskillトリガーを設定するための包括的な参照ドキュメントです。
 
-## 목차
+## 目次
 
-- [키워드 트리거 (명시적)](#키워드-트리거-명시적)
-- [Intent 패턴 트리거 (암시적)](#intent-패턴-트리거-암시적)
-- [파일 경로 트리거](#파일-경로-트리거)
-- [콘텐츠 패턴 트리거](#콘텐츠-패턴-트리거)
-- [모범 사례 요약](#모범-사례-요약)
+- [キーワードトリガー（明示的）](#キーワードトリガー明示的)
+- [Intentパターントリガー（暗黙的）](#intentパターントリガー暗黙的)
+- [ファイルパストリガー](#ファイルパストリガー)
+- [コンテンツパターントリガー](#コンテンツパターントリガー)
+- [ベストプラクティスサマリー](#ベストプラクティスサマリー)
 
 ---
 
-## 키워드 트리거 (명시적)
+## キーワードトリガー（明示的）
 
-### 작동 방식
+### 動作方式
 
-사용자 프롬프트에서 대소문자 구분 없는 부분 문자열 매칭을 수행합니다.
+ユーザープロンプトで大文字小文字を区別しない部分文字列マッチングを実行します。
 
-### 용도
+### 用途
 
-사용자가 주제를 명시적으로 언급하는 주제 기반 활성화에 사용합니다.
+ユーザーがトピックを明示的に言及するトピックベースの活性化に使用します。
 
-### 설정
+### 設定
 
 ```json
 "promptTriggers": {
@@ -30,32 +30,32 @@ Claude Code의 skill 자동 활성화 시스템에서 skill 트리거를 설정�
 }
 ```
 
-### 예시
+### 例
 
-- 사용자 프롬프트: "**layout** 시스템이 어떻게 작동하나요?"
-- 매칭: "layout" 키워드
-- 활성화: `project-catalog-developer`
+- ユーザープロンプト: "**layout**システムはどのように動作しますか？"
+- マッチ: "layout"キーワード
+- 活性化: `project-catalog-developer`
 
-### 모범 사례
+### ベストプラクティス
 
-- 구체적이고 모호하지 않은 용어 사용
-- 일반적인 변형 포함 ("layout", "layout system", "grid layout")
-- 너무 일반적인 단어 피하기 ("system", "work", "create")
-- 실제 프롬프트로 테스트
+- 具体的で曖昧でない用語を使用
+- 一般的なバリエーションを含める（"layout", "layout system", "grid layout"）
+- あまりにも一般的な単語を避ける（"system", "work", "create"）
+- 実際のプロンプトでテスト
 
 ---
 
-## Intent 패턴 트리거 (암시적)
+## Intentパターントリガー（暗黙的）
 
-### 작동 방식
+### 動作方式
 
-사용자가 주제를 명시적으로 언급하지 않아도 의도를 감지하기 위한 regex 패턴 매칭입니다.
+ユーザーがトピックを明示的に言及しなくても意図を検出するためのregexパターンマッチングです。
 
-### 용도
+### 用途
 
-사용자가 특정 주제가 아닌 원하는 작업을 설명하는 동작 기반 활성화에 사용합니다.
+ユーザーが特定のトピックではなく望む作業を説明する動作ベースの活性化に使用します。
 
-### 설정
+### 設定
 
 ```json
 "promptTriggers": {
@@ -66,59 +66,59 @@ Claude Code의 skill 자동 활성화 시스템에서 skill 트리거를 설정�
 }
 ```
 
-### 예시
+### 例
 
-**데이터베이스 작업:**
-- 사용자 프롬프트: "사용자 추적 기능 추가해줘"
-- 매칭: `(add).*?(feature)`
-- 활성화: `database-verification`, `error-tracking`
+**データベース作業:**
+- ユーザープロンプト: "ユーザートラッキング機能を追加して"
+- マッチ: `(add).*?(feature)`
+- 活性化: `database-verification`, `error-tracking`
 
-**컴포넌트 생성:**
-- 사용자 프롬프트: "대시보드 위젯 만들어줘"
-- 매칭: `(create).*?(component)` (패턴에 component가 있는 경우)
-- 활성화: `frontend-dev-guidelines`
+**コンポーネント作成:**
+- ユーザープロンプト: "ダッシュボードウィジェットを作成して"
+- マッチ: `(create).*?(component)`（パターンにcomponentがある場合）
+- 活性化: `frontend-dev-guidelines`
 
-### 모범 사례
+### ベストプラクティス
 
-- 일반적인 동작 동사 포착: `(create|add|modify|build|implement)`
-- 도메인별 명사 포함: `(feature|endpoint|component|workflow)`
-- 탐욕적이지 않은 매칭 사용: `.*` 대신 `.*?`
-- regex 테스터로 패턴 철저히 테스트 (https://regex101.com/)
-- 패턴을 너무 넓게 만들지 않기 (오탐 발생)
-- 패턴을 너무 구체적으로 만들지 않기 (미탐 발생)
+- 一般的な動作動詞を捕捉: `(create|add|modify|build|implement)`
+- ドメイン固有の名詞を含める: `(feature|endpoint|component|workflow)`
+- 非貪欲マッチングを使用: `.*`の代わりに`.*?`
+- regexテスターでパターンを徹底的にテスト（https://regex101.com/）
+- パターンを広すぎないように（誤検知発生）
+- パターンを具体的すぎないように（検出漏れ発生）
 
-### 일반적인 패턴 예시
+### 一般的なパターン例
 
 ```regex
-# 데이터베이스 작업
+# データベース作業
 (add|create|implement).*?(user|login|auth|feature)
 
-# 설명 요청
+# 説明リクエスト
 (how does|explain|what is|describe).*?
 
-# 프론트엔드 작업
+# フロントエンド作業
 (create|add|make|build).*?(component|UI|page|modal|dialog)
 
-# 오류 처리
+# エラー処理
 (fix|handle|catch|debug).*?(error|exception|bug)
 
-# 워크플로우 작업
+# ワークフロー作業
 (create|add|modify).*?(workflow|step|branch|condition)
 ```
 
 ---
 
-## 파일 경로 트리거
+## ファイルパストリガー
 
-### 작동 방식
+### 動作方式
 
-편집 중인 파일 경로에 대해 glob 패턴 매칭을 수행합니다.
+編集中のファイルパスに対してglobパターンマッチングを実行します。
 
-### 용도
+### 用途
 
-프로젝트 내 파일 위치 기반의 도메인/영역별 활성화에 사용합니다.
+プロジェクト内のファイル位置に基づくドメイン/領域別の活性化に使用します。
 
-### 설정
+### 設定
 
 ```json
 "fileTriggers": {
@@ -133,70 +133,70 @@ Claude Code의 skill 자동 활성화 시스템에서 skill 트리거를 설정�
 }
 ```
 
-### Glob 패턴 문법
+### Globパターン構文
 
-- `**` = 여러 디렉토리 (0개 포함)
-- `*` = 디렉토리 이름 내의 모든 문자
-- 예시:
-  - `frontend/src/**/*.tsx` = frontend/src와 하위 디렉토리의 모든 .tsx 파일
-  - `**/schema.prisma` = 프로젝트 어디서든 schema.prisma
-  - `form/src/**/*.ts` = form/src 하위 디렉토리의 모든 .ts 파일
+- `**` = 複数のディレクトリ（0個を含む）
+- `*` = ディレクトリ名内の任意の文字
+- 例:
+  - `frontend/src/**/*.tsx` = frontend/srcとサブディレクトリのすべての.tsxファイル
+  - `**/schema.prisma` = プロジェクトのどこでもschema.prisma
+  - `form/src/**/*.ts` = form/srcのサブディレクトリのすべての.tsファイル
 
-### 예시
+### 例
 
-- 편집 중인 파일: `frontend/src/components/Dashboard.tsx`
-- 매칭: `frontend/src/**/*.tsx`
-- 활성화: `frontend-dev-guidelines`
+- 編集中のファイル: `frontend/src/components/Dashboard.tsx`
+- マッチ: `frontend/src/**/*.tsx`
+- 活性化: `frontend-dev-guidelines`
 
-### 모범 사례
+### ベストプラクティス
 
-- 오탐 방지를 위해 구체적으로 작성
-- 테스트 파일 제외 사용: `**/*.test.ts`
-- 하위 디렉토리 구조 고려
-- 실제 파일 경로로 패턴 테스트
-- 가능한 더 좁은 패턴 사용: `form/**` 대신 `form/src/services/**`
+- 誤検知を防ぐために具体的に記述
+- テストファイルの除外を使用: `**/*.test.ts`
+- サブディレクトリ構造を考慮
+- 実際のファイルパスでパターンをテスト
+- 可能な場合はより狭いパターンを使用: `form/**`の代わりに`form/src/services/**`
 
-### 일반적인 경로 패턴
+### 一般的なパスパターン
 
 ```glob
-# 프론트엔드
-frontend/src/**/*.tsx        # 모든 React 컴포넌트
-frontend/src/**/*.ts         # 모든 TypeScript 파일
-frontend/src/components/**   # components 디렉토리만
+# フロントエンド
+frontend/src/**/*.tsx        # すべてのReactコンポーネント
+frontend/src/**/*.ts         # すべてのTypeScriptファイル
+frontend/src/components/**   # componentsディレクトリのみ
 
-# 백엔드 서비스
-form/src/**/*.ts            # Form 서비스
-email/src/**/*.ts           # Email 서비스
-users/src/**/*.ts           # Users 서비스
+# バックエンドサービス
+form/src/**/*.ts            # Formサービス
+email/src/**/*.ts           # Emailサービス
+users/src/**/*.ts           # Usersサービス
 
-# 데이터베이스
-**/schema.prisma            # Prisma 스키마 (어디서든)
-**/migrations/**/*.sql      # 마이그레이션 파일
-database/src/**/*.ts        # 데이터베이스 스크립트
+# データベース
+**/schema.prisma            # Prismaスキーマ（どこでも）
+**/migrations/**/*.sql      # マイグレーションファイル
+database/src/**/*.ts        # データベーススクリプト
 
-# 워크플로우
-form/src/workflow/**/*.ts              # 워크플로우 엔진
-form/src/workflow-definitions/**/*.json # 워크플로우 정의
+# ワークフロー
+form/src/workflow/**/*.ts              # ワークフローエンジン
+form/src/workflow-definitions/**/*.json # ワークフロー定義
 
-# 테스트 제외
-**/*.test.ts                # TypeScript 테스트
-**/*.test.tsx               # React 컴포넌트 테스트
-**/*.spec.ts                # Spec 파일
+# テスト除外
+**/*.test.ts                # TypeScriptテスト
+**/*.test.tsx               # Reactコンポーネントテスト
+**/*.spec.ts                # Specファイル
 ```
 
 ---
 
-## 콘텐츠 패턴 트리거
+## コンテンツパターントリガー
 
-### 작동 방식
+### 動作方式
 
-파일의 실제 내용(파일 안에 있는 것)에 대해 regex 패턴 매칭을 수행합니다.
+ファイルの実際の内容（ファイルの中にあるもの）に対してregexパターンマッチングを実行します。
 
-### 용도
+### 用途
 
-코드가 import하거나 사용하는 것(Prisma, 컨트롤러, 특정 라이브러리)을 기반으로 한 기술 특화 활성화에 사용합니다.
+コードがimportまたは使用しているもの（Prisma、コントローラー、特定のライブラリ）に基づく技術特化の活性化に使用します。
 
-### 설정
+### 設定
 
 ```json
 "fileTriggers": {
@@ -209,84 +209,84 @@ form/src/workflow-definitions/**/*.json # 워크플로우 정의
 }
 ```
 
-### 예시
+### 例
 
-**Prisma 감지:**
-- 파일 내용: `import { PrismaService } from '@project/database'`
-- 매칭: `import.*[Pp]risma`
-- 활성화: `database-verification`
+**Prisma検出:**
+- ファイル内容: `import { PrismaService } from '@project/database'`
+- マッチ: `import.*[Pp]risma`
+- 活性化: `database-verification`
 
-**Controller 감지:**
-- 파일 내용: `export class UserController {`
-- 매칭: `export class.*Controller`
-- 활성화: `error-tracking`
+**Controller検出:**
+- ファイル内容: `export class UserController {`
+- マッチ: `export class.*Controller`
+- 活性化: `error-tracking`
 
-### 모범 사례
+### ベストプラクティス
 
-- import 매칭: `import.*[Pp]risma` ([Pp]로 대소문자 구분 안 함)
-- 특수 regex 문자 이스케이프: `.findMany(` 대신 `\\.findMany\\(`
-- 패턴은 대소문자 구분 없는 플래그 사용
-- 실제 파일 내용으로 테스트
-- 잘못된 매칭을 피하기 위해 충분히 구체적으로 작성
+- importマッチング: `import.*[Pp]risma`（[Pp]で大文字小文字を区別しない）
+- 特殊regex文字をエスケープ: `.findMany(`の代わりに`\\.findMany\\(`
+- パターンは大文字小文字を区別しないフラグを使用
+- 実際のファイル内容でテスト
+- 誤ったマッチングを避けるために十分に具体的に記述
 
-### 일반적인 콘텐츠 패턴
+### 一般的なコンテンツパターン
 
 ```regex
-# Prisma/데이터베이스
+# Prisma/データベース
 import.*[Pp]risma                # Prisma import
-PrismaService                    # PrismaService 사용
+PrismaService                    # PrismaService使用
 prisma\.                         # prisma.something
-\.findMany\(                     # Prisma 쿼리 메서드
+\.findMany\(                     # Prismaクエリメソッド
 \.create\(
 \.update\(
 \.delete\(
 
-# 컨트롤러/라우트
-export class.*Controller         # Controller 클래스
+# コントローラー/ルート
+export class.*Controller         # Controllerクラス
 router\.                         # Express router
-app\.(get|post|put|delete|patch) # Express app 라우트
+app\.(get|post|put|delete|patch) # Express appルート
 
-# 오류 처리
-try\s*\{                        # Try 블록
-catch\s*\(                      # Catch 블록
-throw new                        # Throw 문
+# エラー処理
+try\s*\{                        # Tryブロック
+catch\s*\(                      # Catchブロック
+throw new                        # Throw文
 
-# React/컴포넌트
-export.*React\.FC               # React 함수형 컴포넌트
-export default function.*       # 기본 함수 export
+# React/コンポーネント
+export.*React\.FC               # React関数コンポーネント
+export default function.*       # デフォルト関数export
 useState|useEffect              # React hooks
 ```
 
 ---
 
-## 모범 사례 요약
+## ベストプラクティスサマリー
 
-### 해야 할 것:
-✅ 구체적이고 모호하지 않은 키워드 사용
-✅ 모든 패턴을 실제 예시로 테스트
-✅ 일반적인 변형 포함
-✅ 탐욕적이지 않은 regex 사용: `.*?`
-✅ 콘텐츠 패턴에서 특수 문자 이스케이프
-✅ 테스트 파일 제외 추가
-✅ 파일 경로 패턴을 좁고 구체적으로 작성
+### すべきこと:
+✅ 具体的で曖昧でないキーワードを使用
+✅ すべてのパターンを実際の例でテスト
+✅ 一般的なバリエーションを含める
+✅ 非貪欲regex使用: `.*?`
+✅ コンテンツパターンで特殊文字をエスケープ
+✅ テストファイルの除外を追加
+✅ ファイルパスパターンを狭く具体的に記述
 
-### 하지 말아야 할 것:
-❌ 너무 일반적인 키워드 사용 ("system", "work")
-❌ Intent 패턴을 너무 넓게 만들기 (오탐)
-❌ 패턴을 너무 구체적으로 만들기 (미탐)
-❌ regex 테스터로 테스트 안 하기 (https://regex101.com/)
-❌ `.*?` 대신 탐욕적 regex `.*` 사용
-❌ 파일 경로에서 너무 넓게 매칭
+### すべきでないこと:
+❌ あまりにも一般的なキーワードを使用（"system", "work"）
+❌ Intentパターンを広すぎるように作成（誤検知）
+❌ パターンを具体的すぎるように作成（検出漏れ）
+❌ regexテスターでテストしない（https://regex101.com/）
+❌ `.*?`の代わりに貪欲regex`.*`を使用
+❌ ファイルパスで広すぎるマッチング
 
-### 트리거 테스트
+### トリガーのテスト
 
-**키워드/intent 트리거 테스트:**
+**キーワード/intentトリガーのテスト:**
 ```bash
-echo '{"session_id":"test","prompt":"테스트 프롬프트"}' | \
+echo '{"session_id":"test","prompt":"テストプロンプト"}' | \
   npx tsx .claude/hooks/skill-activation-prompt.ts
 ```
 
-**파일 경로/콘텐츠 트리거 테스트:**
+**ファイルパス/コンテンツトリガーのテスト:**
 ```bash
 cat <<'EOF' | npx tsx .claude/hooks/skill-verification-guard.ts
 {
@@ -299,7 +299,7 @@ EOF
 
 ---
 
-**관련 파일:**
-- [SKILL.md](SKILL.md) - 메인 skill 가이드
-- [SKILL_RULES_REFERENCE.md](SKILL_RULES_REFERENCE.md) - 전체 skill-rules.json 스키마
-- [PATTERNS_LIBRARY.md](PATTERNS_LIBRARY.md) - 바로 사용 가능한 패턴 라이브러리
+**関連ファイル:**
+- [SKILL.md](SKILL.md) - メインskillガイド
+- [SKILL_RULES_REFERENCE.md](SKILL_RULES_REFERENCE.md) - 完全skill-rules.jsonスキーマ
+- [PATTERNS_LIBRARY.md](PATTERNS_LIBRARY.md) - すぐに使えるパターンライブラリ

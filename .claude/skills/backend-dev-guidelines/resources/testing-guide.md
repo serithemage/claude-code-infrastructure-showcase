@@ -1,21 +1,21 @@
-# 테스트 가이드 - 백엔드 테스트 전략
+# テストガイド - バックエンドテスト戦略
 
-Jest와 모범 사례를 사용한 백엔드 서비스 테스트에 대한 완전한 가이드입니다.
+Jestとモベストプラクティスを使用したバックエンドサービステストの完全なガイドです。
 
-## 목차
+## 目次
 
-- [단위 테스트](#단위-테스트)
-- [통합 테스트](#통합-테스트)
-- [모킹 전략](#모킹-전략)
-- [테스트 데이터 관리](#테스트-데이터-관리)
-- [인증된 라우트 테스트](#인증된-라우트-테스트)
-- [커버리지 목표](#커버리지-목표)
+- [単体テスト](#単体テスト)
+- [統合テスト](#統合テスト)
+- [モッキング戦略](#モッキング戦略)
+- [テストデータ管理](#テストデータ管理)
+- [認証されたルートテスト](#認証されたルートテスト)
+- [カバレッジ目標](#カバレッジ目標)
 
 ---
 
-## 단위 테스트
+## 単体テスト
 
-### 테스트 구조
+### テスト構造
 
 ```typescript
 // services/userService.test.ts
@@ -43,7 +43,7 @@ describe('UserService', () => {
     });
 
     describe('create', () => {
-        it('이메일이 존재하면 에러를 던져야 한다', async () => {
+        it('メールが存在する場合エラーをスローすべき', async () => {
             mockRepository.findByEmail.mockResolvedValue({ id: '123' } as any);
 
             await expect(
@@ -51,7 +51,7 @@ describe('UserService', () => {
             ).rejects.toThrow('Email already in use');
         });
 
-        it('이메일이 고유하면 사용자를 생성해야 한다', async () => {
+        it('メールがユニークな場合ユーザーを作成すべき', async () => {
             mockRepository.findByEmail.mockResolvedValue(null);
             mockRepository.create.mockResolvedValue({ id: '123' } as any);
 
@@ -74,9 +74,9 @@ describe('UserService', () => {
 
 ---
 
-## 통합 테스트
+## 統合テスト
 
-### 실제 데이터베이스로 테스트
+### 実際のデータベースでテスト
 
 ```typescript
 import { PrismaService } from '@project-lifecycle-portal/database';
@@ -85,7 +85,7 @@ describe('UserService Integration', () => {
     let testUser: any;
 
     beforeAll(async () => {
-        // 테스트 데이터 생성
+        // テストデータ作成
         testUser = await PrismaService.main.user.create({
             data: {
                 email: 'test@test.com',
@@ -95,11 +95,11 @@ describe('UserService Integration', () => {
     });
 
     afterAll(async () => {
-        // 정리
+        // クリーンアップ
         await PrismaService.main.user.delete({ where: { id: testUser.id } });
     });
 
-    it('이메일로 사용자를 찾아야 한다', async () => {
+    it('メールでユーザーを見つけるべき', async () => {
         const user = await userService.findByEmail('test@test.com');
         expect(user).toBeDefined();
         expect(user?.email).toBe('test@test.com');
@@ -109,9 +109,9 @@ describe('UserService Integration', () => {
 
 ---
 
-## 모킹 전략
+## モッキング戦略
 
-### PrismaService 모킹
+### PrismaServiceモッキング
 
 ```typescript
 jest.mock('@project-lifecycle-portal/database', () => ({
@@ -129,7 +129,7 @@ jest.mock('@project-lifecycle-portal/database', () => ({
 }));
 ```
 
-### Services 모킹
+### Servicesモッキング
 
 ```typescript
 const mockUserService = {
@@ -141,16 +141,16 @@ const mockUserService = {
 
 ---
 
-## 테스트 데이터 관리
+## テストデータ管理
 
-### Setup과 Teardown
+### SetupとTeardown
 
 ```typescript
 describe('PermissionService', () => {
     let instanceId: number;
 
     beforeAll(async () => {
-        // 테스트 post 생성
+        // テストpost作成
         const post = await PrismaService.main.post.create({
             data: { title: 'Test Post', content: 'Test', authorId: 'test-user' },
         });
@@ -158,18 +158,18 @@ describe('PermissionService', () => {
     });
 
     afterAll(async () => {
-        // 정리
+        // クリーンアップ
         await PrismaService.main.post.delete({
             where: { id: instanceId },
         });
     });
 
     beforeEach(() => {
-        // 캐시 클리어
+        // キャッシュクリア
         permissionService.clearCache();
     });
 
-    it('권한을 확인해야 한다', async () => {
+    it('権限を確認すべき', async () => {
         const hasPermission = await permissionService.checkPermission(
             'user-id',
             instanceId,
@@ -182,22 +182,22 @@ describe('PermissionService', () => {
 
 ---
 
-## 인증된 라우트 테스트
+## 認証されたルートテスト
 
-### test-auth-route.js 사용
+### test-auth-route.jsを使用
 
 ```bash
-# 인증된 엔드포인트 테스트
+# 認証されたエンドポイントをテスト
 node scripts/test-auth-route.js http://localhost:3002/form/api/users
 
-# POST 데이터로 테스트
+# POSTデータでテスト
 node scripts/test-auth-route.js http://localhost:3002/form/api/users POST '{"email":"test@test.com"}'
 ```
 
-### 테스트에서 인증 모킹
+### テストで認証をモック
 
 ```typescript
-// auth middleware 모킹
+// auth middlewareをモック
 jest.mock('../middleware/SSOMiddleware', () => ({
     SSOMiddlewareClient: {
         verifyLoginStatus: (req, res, next) => {
@@ -213,15 +213,15 @@ jest.mock('../middleware/SSOMiddleware', () => ({
 
 ---
 
-## 커버리지 목표
+## カバレッジ目標
 
-### 권장 커버리지
+### 推奨カバレッジ
 
-- **단위 테스트**: 70% 이상 커버리지
-- **통합 테스트**: 중요 경로 커버
-- **E2E 테스트**: 성공 경로 커버
+- **単体テスト**: 70%以上カバレッジ
+- **統合テスト**: クリティカルパスをカバー
+- **E2Eテスト**: 成功パスをカバー
 
-### 커버리지 실행
+### カバレッジ実行
 
 ```bash
 npm test -- --coverage
@@ -229,7 +229,7 @@ npm test -- --coverage
 
 ---
 
-**관련 파일:**
+**関連ファイル:**
 - [SKILL.md](SKILL.md)
 - [services-and-repositories.md](services-and-repositories.md)
 - [complete-examples.md](complete-examples.md)

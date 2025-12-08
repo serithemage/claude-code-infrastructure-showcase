@@ -1,194 +1,194 @@
-# 문제 해결 - Skill 활성화 문제
+# トラブルシューティング - Skill活性化問題
 
-Skill 활성화 문제에 대한 종합 디버깅 가이드입니다.
+Skill活性化問題のための包括的なデバッグガイドです。
 
-## 목차
+## 目次
 
-- [Skill이 트리거되지 않음](#skill이-트리거되지-않음)
-  - [UserPromptSubmit이 제안하지 않음](#userpromptsubmit이-제안하지-않음)
-  - [PreToolUse가 차단하지 않음](#pretooluse가-차단하지-않음)
-- [오탐](#오탐)
-- [Hook이 실행되지 않음](#hook이-실행되지-않음)
-- [성능 문제](#성능-문제)
+- [Skillがトリガーされない](#skillがトリガーされない)
+  - [UserPromptSubmitが提案しない](#userpromptsubmitが提案しない)
+  - [PreToolUseがブロックしない](#pretooluse がブロックしない)
+- [誤検知](#誤検知)
+- [Hookが実行されない](#hookが実行されない)
+- [パフォーマンス問題](#パフォーマンス問題)
 
 ---
 
-## Skill이 트리거되지 않음
+## Skillがトリガーされない
 
-### UserPromptSubmit이 제안하지 않음
+### UserPromptSubmitが提案しない
 
-**증상:** 질문을 했지만 출력에 skill 제안이 나타나지 않음.
+**症状:** 質問をしたが出力にskill提案が表示されない。
 
-**일반적인 원인:**
+**一般的な原因:**
 
-####  1. 키워드가 매칭되지 않음
+####  1. キーワードがマッチしない
 
-**확인:**
-- skill-rules.json의 `promptTriggers.keywords` 확인
-- 프롬프트에 키워드가 실제로 있는지?
-- 기억하세요: 대소문자 구분 없는 부분 문자열 매칭
+**確認:**
+- skill-rules.jsonの`promptTriggers.keywords`を確認
+- プロンプトに実際にキーワードがあるか？
+- 注意: 大文字小文字を区別しない部分文字列マッチング
 
-**예시:**
+**例:**
 ```json
 "keywords": ["layout", "grid"]
 ```
-- "layout이 어떻게 작동하나요?" → ✅ "layout" 매칭
-- "grid 시스템이 어떻게 작동하나요?" → ✅ "grid" 매칭
-- "layouts가 어떻게 작동하나요?" → ✅ "layout" 매칭
-- "어떻게 작동하나요?" → ❌ 매칭 안 됨
+- "layoutはどのように動作しますか？" → ✅ "layout"がマッチ
+- "gridシステムはどのように動作しますか？" → ✅ "grid"がマッチ
+- "layoutsはどのように動作しますか？" → ✅ "layout"がマッチ
+- "どのように動作しますか？" → ❌ マッチなし
 
-**해결:** skill-rules.json에 더 많은 키워드 변형 추가
+**解決:** skill-rules.jsonにより多くのキーワードバリエーションを追加
 
-#### 2. Intent 패턴이 너무 구체적
+#### 2. Intentパターンが具体的すぎる
 
-**확인:**
-- `promptTriggers.intentPatterns` 확인
-- https://regex101.com/에서 regex 테스트
-- 더 넓은 패턴이 필요할 수 있음
+**確認:**
+- `promptTriggers.intentPatterns`を確認
+- https://regex101.com/でregexをテスト
+- より広いパターンが必要かもしれない
 
-**예시:**
+**例:**
 ```json
 "intentPatterns": [
-  "(create|add).*?(database.*?table)"  // 너무 구체적
+  "(create|add).*?(database.*?table)"  // 具体的すぎる
 ]
 ```
-- "database table 생성해줘" → ✅ 매칭
-- "새 table 추가해줘" → ❌ 매칭 안 됨 ("database" 누락)
+- "database tableを作成して" → ✅ マッチ
+- "新しいtableを追加して" → ❌ マッチしない（"database"がない）
 
-**해결:** 패턴을 넓히기:
+**解決:** パターンを広げる:
 ```json
 "intentPatterns": [
-  "(create|add).*?(table|database)"  // 더 나음
+  "(create|add).*?(table|database)"  // 改善
 ]
 ```
 
-#### 3. Skill 이름 오타
+#### 3. Skill名のタイポ
 
-**확인:**
-- SKILL.md frontmatter의 skill 이름
-- skill-rules.json의 skill 이름
-- 정확히 일치해야 함
+**確認:**
+- SKILL.md frontmatterのskill名
+- skill-rules.jsonのskill名
+- 正確に一致している必要がある
 
-**예시:**
+**例:**
 ```yaml
 # SKILL.md
 name: project-catalog-developer
 ```
 ```json
 // skill-rules.json
-"project-catalogue-developer": {  // ❌ 오타: catalogue vs catalog
+"project-catalogue-developer": {  // ❌ タイポ: catalogue vs catalog
   ...
 }
 ```
 
-**해결:** 이름이 정확히 일치하도록 수정
+**解決:** 名前が正確に一致するように修正
 
-#### 4. JSON 구문 오류
+#### 4. JSON構文エラー
 
-**확인:**
+**確認:**
 ```bash
 cat .claude/skills/skill-rules.json | jq .
 ```
 
-유효하지 않은 JSON이면 jq가 오류를 표시합니다.
+無効なJSONの場合、jqがエラーを表示します。
 
-**일반적인 오류:**
-- 후행 쉼표
-- 따옴표 누락
-- 큰따옴표 대신 작은따옴표
-- 문자열에서 이스케이프 안 된 문자
+**一般的なエラー:**
+- 末尾のカンマ
+- 引用符の欠落
+- ダブルクォートの代わりにシングルクォート
+- 文字列内のエスケープされていない文字
 
-**해결:** JSON 구문 수정, jq로 검증
+**解決:** JSON構文を修正、jqで検証
 
-#### 디버그 명령
+#### デバッグコマンド
 
-수동으로 hook 테스트:
+手動でhookをテスト:
 
 ```bash
-echo '{"session_id":"debug","prompt":"여기에 테스트 프롬프트"}' | \
+echo '{"session_id":"debug","prompt":"ここにテストプロンプト"}' | \
   npx tsx .claude/hooks/skill-activation-prompt.ts
 ```
 
-예상: 출력에 skill이 나타나야 함.
+期待: 出力にskillが表示される。
 
 ---
 
-### PreToolUse가 차단하지 않음
+### PreToolUseがブロックしない
 
-**증상:** guardrail을 트리거해야 할 파일을 편집했지만 차단이 발생하지 않음.
+**症状:** guardrailをトリガーすべきファイルを編集したがブロックが発生しない。
 
-**일반적인 원인:**
+**一般的な原因:**
 
-#### 1. 파일 경로가 패턴과 매칭되지 않음
+#### 1. ファイルパスがパターンとマッチしない
 
-**확인:**
-- 편집 중인 파일 경로
-- skill-rules.json의 `fileTriggers.pathPatterns`
-- Glob 패턴 문법
+**確認:**
+- 編集中のファイルパス
+- skill-rules.jsonの`fileTriggers.pathPatterns`
+- Globパターン構文
 
-**예시:**
+**例:**
 ```json
 "pathPatterns": [
   "frontend/src/**/*.tsx"
 ]
 ```
-- 편집 중: `frontend/src/components/Dashboard.tsx` → ✅ 매칭
-- 편집 중: `frontend/tests/Dashboard.test.tsx` → ✅ 매칭 (제외 추가 필요!)
-- 편집 중: `backend/src/app.ts` → ❌ 매칭 안 됨
+- 編集中: `frontend/src/components/Dashboard.tsx` → ✅ マッチ
+- 編集中: `frontend/tests/Dashboard.test.tsx` → ✅ マッチ（除外を追加すべき！）
+- 編集中: `backend/src/app.ts` → ❌ マッチなし
 
-**해결:** glob 패턴 조정 또는 누락된 경로 추가
+**解決:** globパターンを調整または欠落パスを追加
 
-#### 2. pathExclusions로 제외됨
+#### 2. pathExclusionsで除外されている
 
-**확인:**
-- 테스트 파일을 편집하고 있는지?
-- `fileTriggers.pathExclusions` 확인
+**確認:**
+- テストファイルを編集していないか？
+- `fileTriggers.pathExclusions`を確認
 
-**예시:**
+**例:**
 ```json
 "pathExclusions": [
   "**/*.test.ts",
   "**/*.spec.ts"
 ]
 ```
-- 편집 중: `services/user.test.ts` → ❌ 제외됨
-- 편집 중: `services/user.ts` → ✅ 제외 안 됨
+- 編集中: `services/user.test.ts` → ❌ 除外される
+- 編集中: `services/user.ts` → ✅ 除外されない
 
-**해결:** 테스트 제외가 너무 넓으면 좁히거나 제거
+**解決:** テスト除外が広すぎる場合は狭めるか削除
 
-#### 3. 콘텐츠 패턴을 찾을 수 없음
+#### 3. コンテンツパターンが見つからない
 
-**확인:**
-- 파일에 실제로 패턴이 포함되어 있는지?
-- `fileTriggers.contentPatterns` 확인
-- Regex가 맞는지?
+**確認:**
+- ファイルに実際にパターンが含まれているか？
+- `fileTriggers.contentPatterns`を確認
+- Regexが正しいか？
 
-**예시:**
+**例:**
 ```json
 "contentPatterns": [
   "import.*[Pp]risma"
 ]
 ```
-- 파일 내용: `import { PrismaService } from './prisma'` → ✅ 매칭
-- 파일 내용: `import { Database } from './db'` → ❌ 매칭 안 됨
+- ファイル内容: `import { PrismaService } from './prisma'` → ✅ マッチ
+- ファイル内容: `import { Database } from './db'` → ❌ マッチなし
 
-**디버그:**
+**デバッグ:**
 ```bash
-# 파일에 패턴이 있는지 확인
+# ファイルにパターンがあるか確認
 grep -i "prisma" path/to/file.ts
 ```
 
-**해결:** 콘텐츠 패턴 조정 또는 누락된 import 추가
+**解決:** コンテンツパターンを調整または欠落importを追加
 
-#### 4. 세션에서 이미 Skill 사용됨
+#### 4. セッションで既にSkillが使用されている
 
-**세션 상태 확인:**
+**セッション状態を確認:**
 ```bash
 ls .claude/hooks/state/
 cat .claude/hooks/state/skills-used-{session-id}.json
 ```
 
-**예시:**
+**例:**
 ```json
 {
   "skills_used": ["database-verification"],
@@ -196,42 +196,42 @@ cat .claude/hooks/state/skills-used-{session-id}.json
 }
 ```
 
-skill이 `skills_used`에 있으면 이 세션에서 다시 차단하지 않음.
+skillが`skills_used`にある場合、このセッションでは再度ブロックしない。
 
-**해결:** 리셋하려면 상태 파일 삭제:
+**解決:** リセットするには状態ファイルを削除:
 ```bash
 rm .claude/hooks/state/skills-used-{session-id}.json
 ```
 
-#### 5. 파일 마커 존재
+#### 5. ファイルマーカーが存在する
 
-**파일에서 스킵 마커 확인:**
+**ファイルでスキップマーカーを確認:**
 ```bash
 grep "@skip-validation" path/to/file.ts
 ```
 
-발견되면 파일이 영구적으로 스킵됨.
+見つかった場合、ファイルは永久にスキップされる。
 
-**해결:** 검증이 다시 필요하면 마커 제거
+**解決:** 検証が再度必要な場合はマーカーを削除
 
-#### 6. 환경 변수 재정의
+#### 6. 環境変数のオーバーライド
 
-**확인:**
+**確認:**
 ```bash
 echo $SKIP_DB_VERIFICATION
 echo $SKIP_SKILL_GUARDRAILS
 ```
 
-설정되어 있으면 skill이 비활성화됨.
+設定されている場合、skillは無効化される。
 
-**해결:** 환경 변수 해제:
+**解決:** 環境変数の設定を解除:
 ```bash
 unset SKIP_DB_VERIFICATION
 ```
 
-#### 디버그 명령
+#### デバッグコマンド
 
-수동으로 hook 테스트:
+手動でhookをテスト:
 
 ```bash
 cat <<'EOF' | npx tsx .claude/hooks/skill-verification-guard.ts 2>&1
@@ -244,27 +244,27 @@ EOF
 echo "Exit code: $?"
 ```
 
-예상:
-- 차단해야 하면 종료 코드 2 + stderr 메시지
-- 허용해야 하면 종료 코드 0 + 출력 없음
+期待:
+- ブロックすべき場合は終了コード2 + stderrメッセージ
+- 許可すべき場合は終了コード0 + 出力なし
 
 ---
 
-## 오탐
+## 誤検知
 
-**증상:** Skill이 트리거되지 않아야 할 때 트리거됨.
+**症状:** Skillがトリガーされるべきでないときにトリガーされる。
 
-**일반적인 원인 및 해결책:**
+**一般的な原因と解決策:**
 
-### 1. 키워드가 너무 일반적
+### 1. キーワードが一般的すぎる
 
-**문제:**
+**問題:**
 ```json
-"keywords": ["user", "system", "create"]  // 너무 넓음
+"keywords": ["user", "system", "create"]  // 広すぎる
 ```
-- 트리거됨: "user manual", "file system", "create directory"
+- トリガー: "user manual", "file system", "create directory"
 
-**해결:** 키워드를 더 구체적으로
+**解決:** キーワードをより具体的に
 ```json
 "keywords": [
   "user authentication",
@@ -273,97 +273,97 @@ echo "Exit code: $?"
 ]
 ```
 
-### 2. Intent 패턴이 너무 넓음
+### 2. Intentパターンが広すぎる
 
-**문제:**
+**問題:**
 ```json
 "intentPatterns": [
-  "(create)"  // "create"가 있는 모든 것에 매칭
+  "(create)"  // "create"を含むすべてにマッチ
 ]
 ```
-- 트리거됨: "create file", "create folder", "create account"
+- トリガー: "create file", "create folder", "create account"
 
-**해결:** 패턴에 context 추가
+**解決:** パターンにcontextを追加
 ```json
 "intentPatterns": [
-  "(create|add).*?(database|table|feature)"  // 더 구체적
+  "(create|add).*?(database|table|feature)"  // より具体的
 ]
 ```
 
-**고급:** 부정 전방 탐색으로 제외
+**高度:** 否定先読みで除外
 ```regex
-(create)(?!.*test).*?(feature)  // "test"가 나타나면 매칭 안 함
+(create)(?!.*test).*?(feature)  // "test"が出現したらマッチしない
 ```
 
-### 3. 파일 경로가 너무 일반적
+### 3. ファイルパスが一般的すぎる
 
-**문제:**
+**問題:**
 ```json
 "pathPatterns": [
-  "form/**"  // form/ 안의 모든 것에 매칭
+  "form/**"  // form/内のすべてにマッチ
 ]
 ```
-- 트리거됨: 테스트 파일, 설정 파일, 모든 것
+- トリガー: テストファイル、設定ファイル、すべて
 
-**해결:** 더 좁은 패턴 사용
+**解決:** より狭いパターンを使用
 ```json
 "pathPatterns": [
-  "form/src/services/**/*.ts",  // 서비스 파일만
+  "form/src/services/**/*.ts",  // サービスファイルのみ
   "form/src/controllers/**/*.ts"
 ]
 ```
 
-### 4. 콘텐츠 패턴이 관련 없는 코드 감지
+### 4. コンテンツパターンが関連のないコードを検出
 
-**문제:**
+**問題:**
 ```json
 "contentPatterns": [
-  "Prisma"  // 주석, 문자열 등에서 매칭
+  "Prisma"  // コメント、文字列などでマッチ
 ]
 ```
-- 트리거됨: `// 여기서 Prisma 사용하지 마세요`
-- 트리거됨: `const note = "Prisma is cool"`
+- トリガー: `// ここでPrismaを使用しないでください`
+- トリガー: `const note = "Prisma is cool"`
 
-**해결:** 패턴을 더 구체적으로
+**解決:** パターンをより具体的に
 ```json
 "contentPatterns": [
-  "import.*[Pp]risma",        // import만
-  "PrismaService\\.",         // 실제 사용만
-  "prisma\\.(findMany|create)" // 특정 메서드
+  "import.*[Pp]risma",        // importのみ
+  "PrismaService\\.",         // 実際の使用のみ
+  "prisma\\.(findMany|create)" // 特定のメソッド
 ]
 ```
 
-### 5. 적용 수준 조정
+### 5. 適用レベルの調整
 
-**최후의 수단:** 오탐이 빈번하면:
+**最後の手段:** 誤検知が頻繁な場合:
 
 ```json
 {
-  "enforcement": "block"  // "suggest"로 변경
+  "enforcement": "block"  // "suggest"に変更
 }
 ```
 
-차단 대신 권고로 변경됩니다.
+ブロックの代わりに推奨に変更される。
 
 ---
 
-## Hook이 실행되지 않음
+## Hookが実行されない
 
-**증상:** Hook이 전혀 실행되지 않음 - 제안도 차단도 없음.
+**症状:** Hookが全く実行されない - 提案もブロックもない。
 
-**일반적인 원인:**
+**一般的な原因:**
 
-### 1. Hook이 등록되지 않음
+### 1. Hookが登録されていない
 
-**`.claude/settings.json` 확인:**
+**`.claude/settings.json`を確認:**
 ```bash
 cat .claude/settings.json | jq '.hooks.UserPromptSubmit'
 cat .claude/settings.json | jq '.hooks.PreToolUse'
 ```
 
-예상: Hook 항목이 있어야 함
+期待: Hookエントリがあるはず
 
-**해결:** 누락된 hook 등록 추가:
+**解決:** 欠落したhook登録を追加:
 ```json
 {
   "hooks": {
@@ -381,116 +381,116 @@ cat .claude/settings.json | jq '.hooks.PreToolUse'
 }
 ```
 
-### 2. Bash 래퍼가 실행 가능하지 않음
+### 2. Bashラッパーが実行可能でない
 
-**확인:**
+**確認:**
 ```bash
 ls -l .claude/hooks/*.sh
 ```
 
-예상: `-rwxr-xr-x` (실행 가능)
+期待: `-rwxr-xr-x`（実行可能）
 
-**해결:**
+**解決:**
 ```bash
 chmod +x .claude/hooks/*.sh
 ```
 
-### 3. 잘못된 Shebang
+### 3. 不正なShebang
 
-**확인:**
+**確認:**
 ```bash
 head -1 .claude/hooks/skill-activation-prompt.sh
 ```
 
-예상: `#!/bin/bash`
+期待: `#!/bin/bash`
 
-**해결:** 첫 번째 줄에 올바른 shebang 추가
+**解決:** 最初の行に正しいshebangを追加
 
-### 4. npx/tsx 사용 불가
+### 4. npx/tsxが使用できない
 
-**확인:**
+**確認:**
 ```bash
 npx tsx --version
 ```
 
-예상: 버전 번호
+期待: バージョン番号
 
-**해결:** 의존성 설치:
+**解決:** 依存関係をインストール:
 ```bash
 cd .claude/hooks
 npm install
 ```
 
-### 5. TypeScript 컴파일 오류
+### 5. TypeScriptコンパイルエラー
 
-**확인:**
+**確認:**
 ```bash
 cd .claude/hooks
 npx tsc --noEmit skill-activation-prompt.ts
 ```
 
-예상: 출력 없음 (오류 없음)
+期待: 出力なし（エラーなし）
 
-**해결:** TypeScript 구문 오류 수정
+**解決:** TypeScript構文エラーを修正
 
 ---
 
-## 성능 문제
+## パフォーマンス問題
 
-**증상:** Hooks가 느림, 프롬프트/편집 전 눈에 띄는 지연.
+**症状:** Hooksが遅い、プロンプト/編集前に目に見える遅延。
 
-**일반적인 원인:**
+**一般的な原因:**
 
-### 1. 패턴이 너무 많음
+### 1. パターンが多すぎる
 
-**확인:**
-- skill-rules.json의 패턴 수
-- 각 패턴 = regex 컴파일 + 매칭
+**確認:**
+- skill-rules.jsonのパターン数
+- 各パターン = regexコンパイル + マッチング
 
-**해결:** 패턴 줄이기
-- 유사한 패턴 결합
-- 중복 패턴 제거
-- 더 구체적인 패턴 사용 (더 빠른 매칭)
+**解決:** パターンを減らす
+- 類似パターンを結合
+- 重複パターンを削除
+- より具体的なパターンを使用（より高速なマッチング）
 
-### 2. 복잡한 Regex
+### 2. 複雑なRegex
 
-**문제:**
+**問題:**
 ```regex
 (create|add|modify|update|implement|build).*?(feature|endpoint|route|service|controller|component|UI|page)
 ```
-- 긴 대안 = 느림
+- 長い代替 = 遅い
 
-**해결:** 단순화
+**解決:** 簡略化
 ```regex
-(create|add).*?(feature|endpoint)  // 더 적은 대안
+(create|add).*?(feature|endpoint)  // より少ない代替
 ```
 
-### 3. 확인할 파일이 너무 많음
+### 3. 確認するファイルが多すぎる
 
-**문제:**
+**問題:**
 ```json
 "pathPatterns": [
-  "**/*.ts"  // 모든 TypeScript 파일 확인
+  "**/*.ts"  // すべてのTypeScriptファイルを確認
 ]
 ```
 
-**해결:** 더 구체적으로
+**解決:** より具体的に
 ```json
 "pathPatterns": [
-  "form/src/services/**/*.ts",  // 특정 디렉토리만
+  "form/src/services/**/*.ts",  // 特定のディレクトリのみ
   "form/src/controllers/**/*.ts"
 ]
 ```
 
-### 4. 큰 파일
+### 4. 大きなファイル
 
-콘텐츠 패턴 매칭은 전체 파일을 읽음 - 큰 파일의 경우 느림.
+コンテンツパターンマッチングはファイル全体を読み取る - 大きなファイルの場合遅い。
 
-**해결:**
-- 필요할 때만 콘텐츠 패턴 사용
-- 파일 크기 제한 고려 (향후 개선 사항)
+**解決:**
+- 必要な場合のみコンテンツパターンを使用
+- ファイルサイズ制限を検討（今後の改善）
 
-### 성능 측정
+### パフォーマンス測定
 
 ```bash
 # UserPromptSubmit
@@ -502,13 +502,13 @@ time cat <<'EOF' | npx tsx .claude/hooks/skill-verification-guard.ts
 EOF
 ```
 
-**목표 지표:**
+**目標指標:**
 - UserPromptSubmit: < 100ms
 - PreToolUse: < 200ms
 
 ---
 
-**관련 파일:**
-- [SKILL.md](SKILL.md) - 메인 skill 가이드
-- [HOOK_MECHANISMS.md](HOOK_MECHANISMS.md) - Hook 작동 방식
-- [SKILL_RULES_REFERENCE.md](SKILL_RULES_REFERENCE.md) - 설정 참조
+**関連ファイル:**
+- [SKILL.md](SKILL.md) - メインskillガイド
+- [HOOK_MECHANISMS.md](HOOK_MECHANISMS.md) - Hook動作方式
+- [SKILL_RULES_REFERENCE.md](SKILL_RULES_REFERENCE.md) - 設定リファレンス

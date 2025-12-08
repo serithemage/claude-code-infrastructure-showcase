@@ -1,28 +1,28 @@
-# 컴포넌트 패턴
+# コンポーネントパターン
 
-타입 안전성, lazy loading, Suspense boundaries를 강조하는 애플리케이션의 최신 React 컴포넌트 아키텍처입니다.
+型安全、lazy loading、Suspense boundaries を強調するアプリケーションの最新 React コンポーネントアーキテクチャです。
 
 ---
 
-## React.FC 패턴 (권장)
+## React.FC パターン (推奨)
 
-### React.FC를 사용하는 이유
+### React.FC を使用する理由
 
-모든 컴포넌트는 다음을 위해 `React.FC<Props>` 패턴을 사용합니다:
-- props에 대한 명시적 타입 안전성
-- 일관된 컴포넌트 시그니처
-- 명확한 prop 인터페이스 문서화
-- 더 나은 IDE 자동완성
+すべてのコンポーネントは以下のために `React.FC<Props>` パターンを使用します:
+- props に対する明示的な型安全
+- 一貫したコンポーネントシグネチャ
+- 明確な prop インターフェースドキュメント
+- より良い IDE 自動補完
 
-### 기본 패턴
+### 基本パターン
 
 ```typescript
 import React from 'react';
 
 interface MyComponentProps {
-    /** 표시할 사용자 ID */
+    /** 表示するユーザー ID */
     userId: number;
-    /** 액션 발생 시 선택적 콜백 */
+    /** アクション発生時の選択的コールバック */
     onAction?: () => void;
 }
 
@@ -37,35 +37,35 @@ export const MyComponent: React.FC<MyComponentProps> = ({ userId, onAction }) =>
 export default MyComponent;
 ```
 
-**핵심 포인트:**
-- JSDoc 주석이 있는 별도의 Props 인터페이스 정의
-- `React.FC<Props>`가 타입 안전성 제공
-- 파라미터에서 props 구조분해
-- 하단에 default export
+**キーポイント:**
+- JSDoc コメント付きの別の Props インターフェース定義
+- `React.FC<Props>` が型安全を提供
+- パラメータで props 分割代入
+- 下部に default export
 
 ---
 
-## Lazy Loading 패턴
+## Lazy Loading パターン
 
-### Lazy Load해야 할 때
+### Lazy Load すべきとき
 
-다음과 같은 컴포넌트는 lazy load합니다:
-- 무거운 것 (DataGrid, 차트, 리치 텍스트 에디터)
-- Route 레벨 컴포넌트
-- Modal/dialog 콘텐츠 (초기에 표시되지 않음)
-- Below-the-fold 콘텐츠
+以下のようなコンポーネントを lazy load します:
+- 重いもの (DataGrid、チャート、リッチテキストエディター)
+- Route レベルコンポーネント
+- Modal/dialog コンテンツ (初期に表示されない)
+- Below-the-fold コンテンツ
 
-### Lazy Load 방법
+### Lazy Load 方法
 
 ```typescript
 import React from 'react';
 
-// 무거운 컴포넌트 lazy load
+// 重いコンポーネント lazy load
 const PostDataGrid = React.lazy(() =>
     import('./grids/PostDataGrid')
 );
 
-// named exports의 경우
+// named exports の場合
 const MyComponent = React.lazy(() =>
     import('./MyComponent').then(module => ({
         default: module.MyComponent
@@ -73,16 +73,16 @@ const MyComponent = React.lazy(() =>
 );
 ```
 
-**PostTable.tsx의 예시:**
+**PostTable.tsx の例:**
 
 ```typescript
 /**
- * 메인 post table 컨테이너 컴포넌트
+ * メイン post table コンテナコンポーネント
  */
 import React, { useState, useCallback } from 'react';
 import { Box, Paper } from '@mui/material';
 
-// 번들 크기 최적화를 위해 PostDataGrid lazy load
+// バンドルサイズ最適化のために PostDataGrid lazy load
 const PostDataGrid = React.lazy(() => import('./grids/PostDataGrid'));
 
 import { SuspenseLoader } from '~components/SuspenseLoader';
@@ -104,31 +104,31 @@ export default PostTable;
 
 ## Suspense Boundaries
 
-### SuspenseLoader 컴포넌트
+### SuspenseLoader コンポーネント
 
 **Import:**
 ```typescript
 import { SuspenseLoader } from '~components/SuspenseLoader';
-// 또는
+// または
 import { SuspenseLoader } from '@/components/SuspenseLoader';
 ```
 
-**사용:**
+**使用:**
 ```typescript
 <SuspenseLoader>
     <LazyLoadedComponent />
 </SuspenseLoader>
 ```
 
-**기능:**
-- lazy 컴포넌트 로드 중 로딩 인디케이터 표시
-- 부드러운 페이드인 애니메이션
-- 일관된 로딩 경험
-- 레이아웃 이동 방지
+**機能:**
+- lazy コンポーネントロード中にローディングインジケーター表示
+- スムーズなフェードインアニメーション
+- 一貫したローディング体験
+- レイアウトシフト防止
 
-### Suspense Boundaries 배치 위치
+### Suspense Boundaries 配置場所
 
-**Route 레벨:**
+**Route レベル:**
 ```typescript
 // routes/my-route/index.tsx
 const MyPage = lazy(() => import('@/features/my-feature/components/MyPage'));
@@ -142,7 +142,7 @@ function Route() {
 }
 ```
 
-**컴포넌트 레벨:**
+**コンポーネントレベル:**
 ```typescript
 function ParentComponent() {
     return (
@@ -156,7 +156,7 @@ function ParentComponent() {
 }
 ```
 
-**여러 Boundaries:**
+**複数 Boundaries:**
 ```typescript
 function Page() {
     return (
@@ -177,18 +177,18 @@ function Page() {
 }
 ```
 
-각 섹션이 독립적으로 로드되어 더 나은 UX.
+各セクションが独立してロードされより良い UX。
 
 ---
 
-## 컴포넌트 구조 템플릿
+## コンポーネント構造テンプレート
 
-### 권장 순서
+### 推奨順序
 
 ```typescript
 /**
- * 컴포넌트 설명
- * 기능, 사용 시점
+ * コンポーネント説明
+ * 機能、使用タイミング
  */
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { Box, Paper, Button } from '@mui/material';
@@ -199,24 +199,24 @@ import { useSuspenseQuery } from '@tanstack/react-query';
 import { myFeatureApi } from '../api/myFeatureApi';
 import type { MyData } from '~types/myData';
 
-// 컴포넌트 imports
+// コンポーネント imports
 import { SuspenseLoader } from '~components/SuspenseLoader';
 
 // Hooks
 import { useAuth } from '@/hooks/useAuth';
 import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
 
-// 1. PROPS 인터페이스 (JSDoc과 함께)
+// 1. PROPS インターフェース (JSDoc と共に)
 interface MyComponentProps {
-    /** 표시할 entity의 ID */
+    /** 表示する entity の ID */
     entityId: number;
-    /** 액션 완료 시 선택적 콜백 */
+    /** アクション完了時の選択的コールバック */
     onComplete?: () => void;
-    /** 표시 모드 */
+    /** 表示モード */
     mode?: 'view' | 'edit';
 }
 
-// 2. 스타일 (인라인이고 100줄 미만인 경우)
+// 2. スタイル (インラインで100行未満の場合)
 const componentStyles: Record<string, SxProps<Theme>> = {
     container: {
         p: 2,
@@ -230,41 +230,41 @@ const componentStyles: Record<string, SxProps<Theme>> = {
     },
 };
 
-// 3. 컴포넌트 정의
+// 3. コンポーネント定義
 export const MyComponent: React.FC<MyComponentProps> = ({
     entityId,
     onComplete,
     mode = 'view',
 }) => {
-    // 4. HOOKS (이 순서로)
-    // - Context hooks 먼저
+    // 4. HOOKS (この順序で)
+    // - Context hooks を先に
     const { user } = useAuth();
     const { showSuccess, showError } = useMuiSnackbar();
 
-    // - 데이터 fetching
+    // - データ fetching
     const { data } = useSuspenseQuery({
         queryKey: ['myEntity', entityId],
         queryFn: () => myFeatureApi.getEntity(entityId),
     });
 
-    // - 로컬 상태
+    // - ローカル状態
     const [selectedItem, setSelectedItem] = useState<string | null>(null);
     const [isEditing, setIsEditing] = useState(mode === 'edit');
 
-    // - Memoized 값
+    // - Memoized 値
     const filteredData = useMemo(() => {
         return data.filter(item => item.active);
     }, [data]);
 
     // - Effects
     useEffect(() => {
-        // 설정
+        // セットアップ
         return () => {
-            // 정리
+            // クリーンアップ
         };
     }, []);
 
-    // 5. 이벤트 핸들러 (useCallback과 함께)
+    // 5. イベントハンドラー (useCallback と共に)
     const handleItemSelect = useCallback((itemId: string) => {
         setSelectedItem(itemId);
     }, []);
@@ -279,7 +279,7 @@ export const MyComponent: React.FC<MyComponentProps> = ({
         }
     }, [entityId, onComplete, showSuccess, showError]);
 
-    // 6. 렌더
+    // 6. レンダー
     return (
         <Box sx={componentStyles.container}>
             <Box sx={componentStyles.header}>
@@ -296,35 +296,35 @@ export const MyComponent: React.FC<MyComponentProps> = ({
     );
 };
 
-// 7. EXPORT (하단에 default export)
+// 7. EXPORT (下部に default export)
 export default MyComponent;
 ```
 
 ---
 
-## 컴포넌트 분리
+## コンポーネント分離
 
-### 컴포넌트를 분리해야 할 때
+### コンポーネントを分離すべきとき
 
-**여러 컴포넌트로 분리해야 할 때:**
-- 컴포넌트가 300줄 초과
-- 여러 개의 구분된 책임
-- 재사용 가능한 섹션
-- 복잡한 중첩 JSX
+**複数コンポーネントに分離すべきとき:**
+- コンポーネントが300行超
+- 複数の区別された責任
+- 再利用可能なセクション
+- 複雑なネスト JSX
 
-**예시:**
+**例:**
 
 ```typescript
-// ❌ 피하세요 - 모놀리식
+// ❌ 避ける - モノリシック
 function MassiveComponent() {
-    // 500줄 이상
-    // 검색 로직
-    // 필터 로직
-    // 그리드 로직
-    // 액션 패널 로직
+    // 500行以上
+    // 検索ロジック
+    // フィルターロジック
+    // グリッドロジック
+    // アクションパネルロジック
 }
 
-// ✅ 권장 - 모듈형
+// ✅ 推奨 - モジュラー
 function ParentContainer() {
     return (
         <Box>
@@ -336,32 +336,32 @@ function ParentContainer() {
 }
 ```
 
-### 함께 유지해야 할 때
+### 一緒に維持すべきとき
 
-**같은 파일에 유지해야 할 때:**
-- 컴포넌트 200줄 미만
-- 밀접하게 결합된 로직
-- 다른 곳에서 재사용 불가
-- 단순 프레젠테이션 컴포넌트
+**同じファイルに維持すべきとき:**
+- コンポーネント200行未満
+- 密接に結合されたロジック
+- 他で再利用不可
+- 単純プレゼンテーションコンポーネント
 
 ---
 
-## Export 패턴
+## Export パターン
 
-### Named Const + Default Export (권장)
+### Named Const + Default Export (推奨)
 
 ```typescript
 export const MyComponent: React.FC<Props> = ({ ... }) => {
-    // 컴포넌트 로직
+    // コンポーネントロジック
 };
 
 export default MyComponent;
 ```
 
-**이유:**
-- 테스트/리팩토링을 위한 named export
-- lazy loading 편의를 위한 default export
-- 소비자에게 두 옵션 모두 제공
+**理由:**
+- テスト/リファクタリングのための named export
+- lazy loading 便宜のための default export
+- 消費者に両方のオプション提供
 
 ### Named Exports Lazy Loading
 
@@ -375,12 +375,12 @@ const MyComponent = React.lazy(() =>
 
 ---
 
-## 컴포넌트 통신
+## コンポーネント通信
 
 ### Props Down, Events Up
 
 ```typescript
-// 부모
+// 親
 function Parent() {
     const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -392,7 +392,7 @@ function Parent() {
     );
 }
 
-// 자식
+// 子
 interface ChildProps {
     data: Data[];
     onSelect: (id: string) => void;
@@ -401,28 +401,28 @@ interface ChildProps {
 export const Child: React.FC<ChildProps> = ({ data, onSelect }) => {
     return (
         <div onClick={() => onSelect(data[0].id)}>
-            {/* 콘텐츠 */}
+            {/* コンテンツ */}
         </div>
     );
 };
 ```
 
-### Prop Drilling 피하기
+### Prop Drilling を避ける
 
-**깊은 중첩에는 context 사용:**
+**深いネストには context 使用:**
 ```typescript
-// ❌ 피하세요 - 5단계 이상 prop drilling
+// ❌ 避ける - 5段階以上 prop drilling
 <A prop={x}>
   <B prop={x}>
     <C prop={x}>
       <D prop={x}>
-        <E prop={x} />  // 결국 여기서 사용
+        <E prop={x} />  // 結局ここで使用
       </D>
     </C>
   </B>
 </A>
 
-// ✅ 권장 - Context 또는 TanStack Query
+// ✅ 推奨 - Context または TanStack Query
 const MyContext = createContext<MyData | null>(null);
 
 function Provider({ children }) {
@@ -432,13 +432,13 @@ function Provider({ children }) {
 
 function DeepChild() {
     const data = useContext(MyContext);
-    // 직접 data 사용
+    // 直接 data 使用
 }
 ```
 
 ---
 
-## 고급 패턴
+## 高度なパターン
 
 ### Compound Components
 
@@ -456,7 +456,7 @@ Card.Header = CardHeader;
 Card.Body = CardBody;
 Card.Footer = CardFooter;
 
-// 사용
+// 使用
 <Card>
     <Card.Header>Title</Card.Header>
     <Card.Body>Content</Card.Body>
@@ -464,7 +464,7 @@ Card.Footer = CardFooter;
 </Card>
 ```
 
-### Render Props (드물지만 유용)
+### Render Props (まれだが有用)
 
 ```typescript
 interface DataProviderProps {
@@ -476,7 +476,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     return <>{children(data)}</>;
 };
 
-// 사용
+// 使用
 <DataProvider>
     {(data) => <Display data={data} />}
 </DataProvider>
@@ -484,19 +484,19 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
 
 ---
 
-## 요약
+## まとめ
 
-**최신 컴포넌트 레시피:**
-1. TypeScript와 함께 `React.FC<Props>`
-2. 무거우면 lazy load: `React.lazy(() => import())`
-3. 로딩을 위해 `<SuspenseLoader>`로 감싸기
-4. 데이터에 `useSuspenseQuery` 사용
-5. Import 별칭 (@/, ~types, ~components)
-6. `useCallback`과 함께 이벤트 핸들러
-7. 하단에 default export
-8. 로딩 상태에서 early returns 금지
+**最新コンポーネントレシピ:**
+1. TypeScript と共に `React.FC<Props>`
+2. 重ければ lazy load: `React.lazy(() => import())`
+3. ローディングのために `<SuspenseLoader>` でラップ
+4. データに `useSuspenseQuery` 使用
+5. Import エイリアス (@/, ~types, ~components)
+6. `useCallback` と共にイベントハンドラー
+7. 下部に default export
+8. ローディング状態での early returns 禁止
 
-**참고:**
-- [data-fetching.md](data-fetching.md) - useSuspenseQuery 세부사항
-- [loading-and-error-states.md](loading-and-error-states.md) - Suspense 모범 사례
-- [complete-examples.md](complete-examples.md) - 전체 작동 예제
+**参考:**
+- [data-fetching.md](data-fetching.md) - useSuspenseQuery 詳細
+- [loading-and-error-states.md](loading-and-error-states.md) - Suspense ベストプラクティス
+- [complete-examples.md](complete-examples.md) - 完全動作例

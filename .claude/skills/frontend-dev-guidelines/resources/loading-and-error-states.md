@@ -1,19 +1,19 @@
 # Loading & Error States
 
-**중요**: 적절한 loading과 error state 처리는 레이아웃 이동을 방지하고 더 나은 사용자 경험을 제공합니다.
+**重要**: 適切な loading と error state 処理はレイアウト移動を防止し、より良いユーザー体験を提供します。
 
 ---
 
-## ⚠️ 핵심 규칙: Early Return 절대 금지
+## ⚠️ 核心ルール: Early Return 絶対禁止
 
-### 문제
+### 問題
 
 ```typescript
-// ❌ 절대 이렇게 하지 마세요 - loading spinner로 early return
+// ❌ 絶対にこうしないでください - loading spinner で early return
 const Component = () => {
     const { data, isLoading } = useQuery();
 
-    // 잘못됨: 레이아웃 이동과 나쁜 UX 유발
+    // 間違い: レイアウト移動と悪い UX を引き起こす
     if (isLoading) {
         return <LoadingSpinner />;
     }
@@ -22,15 +22,15 @@ const Component = () => {
 };
 ```
 
-**왜 나쁜가:**
-1. **레이아웃 이동**: 로딩 완료 시 콘텐츠 위치가 점프
-2. **CLS (Cumulative Layout Shift)**: 나쁜 Core Web Vital 점수
-3. **불쾌한 UX**: 페이지 구조가 갑자기 변경
-4. **스크롤 위치 손실**: 사용자가 페이지에서 위치를 잃음
+**なぜ悪いか:**
+1. **レイアウト移動**: ローディング完了時にコンテンツ位置がジャンプ
+2. **CLS (Cumulative Layout Shift)**: 悪い Core Web Vital スコア
+3. **不快な UX**: ページ構造が突然変更
+4. **スクロール位置損失**: ユーザーがページ内の位置を失う
 
-### 해결책
+### 解決策
 
-**옵션 1: SuspenseLoader (새 컴포넌트에 권장)**
+**オプション 1: SuspenseLoader (新コンポーネントに推奨)**
 
 ```typescript
 import { SuspenseLoader } from '~components/SuspenseLoader';
@@ -46,7 +46,7 @@ export const MyComponent: React.FC = () => {
 };
 ```
 
-**옵션 2: LoadingOverlay (레거시 useQuery 패턴용)**
+**オプション 2: LoadingOverlay (レガシー useQuery パターン用)**
 
 ```typescript
 import { LoadingOverlay } from '~components/LoadingOverlay';
@@ -64,24 +64,24 @@ export const MyComponent: React.FC = () => {
 
 ---
 
-## SuspenseLoader 컴포넌트
+## SuspenseLoader コンポーネント
 
-### 기능
+### 機能
 
-- lazy 컴포넌트 로딩 중 로딩 인디케이터 표시
-- 부드러운 페이드인 애니메이션
-- 레이아웃 이동 방지
-- 앱 전체에서 일관된 로딩 경험
+- lazy コンポーネントローディング中にローディングインジケーター表示
+- スムーズなフェードインアニメーション
+- レイアウト移動防止
+- アプリ全体で一貫したローディング体験
 
 ### Import
 
 ```typescript
 import { SuspenseLoader } from '~components/SuspenseLoader';
-// 또는
+// または
 import { SuspenseLoader } from '@/components/SuspenseLoader';
 ```
 
-### 기본 사용법
+### 基本使用法
 
 ```typescript
 <SuspenseLoader>
@@ -89,14 +89,14 @@ import { SuspenseLoader } from '@/components/SuspenseLoader';
 </SuspenseLoader>
 ```
 
-### useSuspenseQuery와 함께
+### useSuspenseQuery と共に
 
 ```typescript
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { SuspenseLoader } from '~components/SuspenseLoader';
 
 const Inner: React.FC = () => {
-    // isLoading 불필요!
+    // isLoading 不要!
     const { data } = useSuspenseQuery({
         queryKey: ['data'],
         queryFn: () => api.getData(),
@@ -105,7 +105,7 @@ const Inner: React.FC = () => {
     return <Display data={data} />;
 };
 
-// 외부 컴포넌트가 Suspense로 감싸기
+// 外部コンポーネントが Suspense でラップ
 export const Outer: React.FC = () => {
     return (
         <SuspenseLoader>
@@ -115,9 +115,9 @@ export const Outer: React.FC = () => {
 };
 ```
 
-### 여러 Suspense Boundary
+### 複数 Suspense Boundary
 
-**패턴**: 독립적인 섹션에 대해 별도의 로딩
+**パターン**: 独立したセクションに対して別々のローディング
 
 ```typescript
 export const Dashboard: React.FC = () => {
@@ -139,21 +139,21 @@ export const Dashboard: React.FC = () => {
 };
 ```
 
-**장점:**
-- 각 섹션이 독립적으로 로드
-- 사용자가 부분 콘텐츠를 더 빨리 볼 수 있음
-- 더 나은 체감 성능
+**利点:**
+- 各セクションが独立してロード
+- ユーザーが部分コンテンツをより早く見れる
+- より良い体感パフォーマンス
 
-### 중첩 Suspense
+### ネスト Suspense
 
 ```typescript
 export const ParentComponent: React.FC = () => {
     return (
         <SuspenseLoader>
-            {/* Parent가 로딩 중 suspend */}
+            {/* Parent がローディング中に suspend */}
             <ParentContent>
                 <SuspenseLoader>
-                    {/* child를 위한 중첩 suspense */}
+                    {/* child のためのネスト suspense */}
                     <ChildComponent />
                 </SuspenseLoader>
             </ParentContent>
@@ -164,15 +164,15 @@ export const ParentComponent: React.FC = () => {
 
 ---
 
-## LoadingOverlay 컴포넌트
+## LoadingOverlay コンポーネント
 
-### 사용 시점
+### 使用タイミング
 
-- `useQuery`가 있는 레거시 컴포넌트 (아직 Suspense로 리팩토링 안 됨)
-- 오버레이 로딩 상태가 필요할 때
-- Suspense boundary를 사용할 수 없을 때
+- `useQuery` があるレガシーコンポーネント (まだ Suspense にリファクタリングされていない)
+- オーバーレイローディング状態が必要な時
+- Suspense boundary が使用できない時
 
-### 사용법
+### 使用法
 
 ```typescript
 import { LoadingOverlay } from '~components/LoadingOverlay';
@@ -193,18 +193,18 @@ export const MyComponent: React.FC = () => {
 };
 ```
 
-**기능:**
-- 스피너가 있는 반투명 오버레이 표시
-- 콘텐츠 영역 예약 (레이아웃 이동 없음)
-- 로딩 중 상호작용 방지
+**機能:**
+- スピナーがある半透明オーバーレイ表示
+- コンテンツ領域を予約 (レイアウト移動なし)
+- ローディング中のインタラクション防止
 
 ---
 
-## 에러 처리
+## エラー処理
 
-### useMuiSnackbar Hook (필수)
+### useMuiSnackbar Hook (必須)
 
-**절대 react-toastify 사용 금지** - 프로젝트 표준은 MUI Snackbar
+**絶対に react-toastify 使用禁止** - プロジェクト標準は MUI Snackbar
 
 ```typescript
 import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
@@ -225,11 +225,11 @@ export const MyComponent: React.FC = () => {
 };
 ```
 
-**사용 가능한 메서드:**
-- `showSuccess(message)` - 녹색 성공 메시지
-- `showError(message)` - 빨간색 에러 메시지
-- `showWarning(message)` - 주황색 경고 메시지
-- `showInfo(message)` - 파란색 정보 메시지
+**利用可能なメソッド:**
+- `showSuccess(message)` - 緑の成功メッセージ
+- `showError(message)` - 赤のエラーメッセージ
+- `showWarning(message)` - オレンジの警告メッセージ
+- `showInfo(message)` - 青の情報メッセージ
 
 ### TanStack Query Error Callbacks
 
@@ -244,7 +244,7 @@ export const MyComponent: React.FC = () => {
         queryKey: ['data'],
         queryFn: () => api.getData(),
 
-        // 에러 처리
+        // エラー処理
         onError: (error) => {
             showError('Failed to load data');
             console.error('Query error:', error);
@@ -288,9 +288,9 @@ export const MyPage: React.FC = () => {
 
 ---
 
-## 완전한 예제
+## 完全な例
 
-### 예제 1: Suspense가 있는 최신 컴포넌트
+### 例 1: Suspense がある最新コンポーネント
 
 ```typescript
 import React from 'react';
@@ -299,14 +299,14 @@ import { useSuspenseQuery } from '@tanstack/react-query';
 import { SuspenseLoader } from '~components/SuspenseLoader';
 import { myFeatureApi } from '../api/myFeatureApi';
 
-// Inner 컴포넌트는 useSuspenseQuery 사용
+// Inner コンポーネントは useSuspenseQuery 使用
 const InnerComponent: React.FC<{ id: number }> = ({ id }) => {
     const { data } = useSuspenseQuery({
         queryKey: ['entity', id],
         queryFn: () => myFeatureApi.getEntity(id),
     });
 
-    // data는 항상 정의됨 - isLoading 불필요!
+    // data は常に定義済み - isLoading 不要!
     return (
         <Paper sx={{ p: 2 }}>
             <h2>{data.title}</h2>
@@ -315,7 +315,7 @@ const InnerComponent: React.FC<{ id: number }> = ({ id }) => {
     );
 };
 
-// Outer 컴포넌트가 Suspense boundary 제공
+// Outer コンポーネントが Suspense boundary 提供
 export const OuterComponent: React.FC<{ id: number }> = ({ id }) => {
     return (
         <Box>
@@ -329,7 +329,7 @@ export const OuterComponent: React.FC<{ id: number }> = ({ id }) => {
 export default OuterComponent;
 ```
 
-### 예제 2: LoadingOverlay가 있는 레거시 패턴
+### 例 2: LoadingOverlay があるレガシーパターン
 
 ```typescript
 import React from 'react';
@@ -355,7 +355,7 @@ export const LegacyComponent: React.FC<{ id: number }> = ({ id }) => {
 };
 ```
 
-### 예제 3: Snackbar가 있는 에러 처리
+### 例 3: Snackbar があるエラー処理
 
 ```typescript
 import React from 'react';
@@ -399,20 +399,20 @@ export const EntityEditor: React.FC<{ id: number }> = ({ id }) => {
 
 ---
 
-## Loading State 안티패턴
+## Loading State アンチパターン
 
-### ❌ 하지 말아야 할 것
+### ❌ すべきでないこと
 
 ```typescript
-// ❌ 절대 금지 - Early return
+// ❌ 絶対禁止 - Early return
 if (isLoading) {
     return <CircularProgress />;
 }
 
-// ❌ 절대 금지 - 조건부 렌더링
+// ❌ 絶対禁止 - 条件付きレンダリング
 {isLoading ? <Spinner /> : <Content />}
 
-// ❌ 절대 금지 - 레이아웃 변경
+// ❌ 絶対禁止 - レイアウト変更
 if (isLoading) {
     return (
         <Box sx={{ height: 100 }}>
@@ -421,26 +421,26 @@ if (isLoading) {
     );
 }
 return (
-    <Box sx={{ height: 500 }}>  // 다른 높이!
+    <Box sx={{ height: 500 }}>  // 異なる高さ!
         <Content />
     </Box>
 );
 ```
 
-### ✅ 해야 할 것
+### ✅ すべきこと
 
 ```typescript
-// ✅ 최선 - useSuspenseQuery + SuspenseLoader
+// ✅ 最善 - useSuspenseQuery + SuspenseLoader
 <SuspenseLoader>
     <ComponentWithSuspenseQuery />
 </SuspenseLoader>
 
-// ✅ 수용 가능 - LoadingOverlay
+// ✅ 許容 - LoadingOverlay
 <LoadingOverlay loading={isLoading}>
     <Content />
 </LoadingOverlay>
 
-// ✅ OK - 같은 레이아웃의 인라인 skeleton
+// ✅ OK - 同じレイアウトのインライン skeleton
 <Box sx={{ height: 500 }}>
     {isLoading ? <Skeleton variant='rectangular' height='100%' /> : <Content />}
 </Box>
@@ -448,9 +448,9 @@ return (
 
 ---
 
-## Skeleton Loading (대안)
+## Skeleton Loading (代替)
 
-### MUI Skeleton 컴포넌트
+### MUI Skeleton コンポーネント
 
 ```typescript
 import { Skeleton, Box } from '@mui/material';
@@ -478,24 +478,24 @@ export const MyComponent: React.FC = () => {
 };
 ```
 
-**핵심**: Skeleton은 실제 콘텐츠와 **같은 레이아웃**이어야 함 (이동 없음)
+**核心**: Skeleton は実際のコンテンツと**同じレイアウト**でなければならない (移動なし)
 
 ---
 
-## 요약
+## まとめ
 
 **Loading States:**
-- ✅ **권장**: SuspenseLoader + useSuspenseQuery (최신 패턴)
-- ✅ **수용 가능**: LoadingOverlay (레거시 패턴)
-- ✅ **OK**: 같은 레이아웃의 Skeleton
-- ❌ **절대 금지**: Early return 또는 조건부 레이아웃
+- ✅ **推奨**: SuspenseLoader + useSuspenseQuery (最新パターン)
+- ✅ **許容**: LoadingOverlay (レガシーパターン)
+- ✅ **OK**: 同じレイアウトの Skeleton
+- ❌ **絶対禁止**: Early return または条件付きレイアウト
 
-**에러 처리:**
-- ✅ **항상**: 사용자 피드백에 useMuiSnackbar
-- ❌ **절대 금지**: react-toastify
-- ✅ queries/mutations에서 onError 콜백 사용
-- ✅ 컴포넌트 레벨 에러에 Error boundaries
+**エラー処理:**
+- ✅ **常に**: ユーザーフィードバックに useMuiSnackbar
+- ❌ **絶対禁止**: react-toastify
+- ✅ queries/mutations で onError コールバック使用
+- ✅ コンポーネントレベルエラーに Error boundaries
 
-**참고:**
-- [component-patterns.md](component-patterns.md) - Suspense 통합
-- [data-fetching.md](data-fetching.md) - useSuspenseQuery 세부사항
+**参考:**
+- [component-patterns.md](component-patterns.md) - Suspense 統合
+- [data-fetching.md](data-fetching.md) - useSuspenseQuery 詳細

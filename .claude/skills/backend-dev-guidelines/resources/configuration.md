@@ -1,78 +1,78 @@
-# 설정 관리 - UnifiedConfig 패턴
+# 設定管理 - UnifiedConfigパターン
 
-백엔드 마이크로서비스의 설정 관리에 대한 완전한 가이드입니다.
+バックエンドマイクロサービスの設定管理の完全なガイドです。
 
-## 목차
+## 目次
 
-- [UnifiedConfig 개요](#unifiedconfig-개요)
-- [process.env 직접 사용 금지](#processenv-직접-사용-금지)
-- [설정 구조](#설정-구조)
-- [환경별 설정](#환경별-설정)
-- [시크릿 관리](#시크릿-관리)
-- [마이그레이션 가이드](#마이그레이션-가이드)
-
----
-
-## UnifiedConfig 개요
-
-### UnifiedConfig를 사용하는 이유
-
-**process.env의 문제점:**
-- ❌ 타입 안전성 없음
-- ❌ 유효성 검사 없음
-- ❌ 테스트하기 어려움
-- ❌ 코드 전체에 분산됨
-- ❌ 기본값 없음
-- ❌ 오타에 대한 런타임 에러
-
-**unifiedConfig의 장점:**
-- ✅ 타입 안전 설정
-- ✅ 단일 진실 공급원
-- ✅ 시작 시 유효성 검사
-- ✅ 모킹으로 쉬운 테스트
-- ✅ 명확한 구조
-- ✅ 환경 변수로 폴백
+- [UnifiedConfig概要](#unifiedconfig概要)
+- [process.env直接使用禁止](#processenv直接使用禁止)
+- [設定構造](#設定構造)
+- [環境別設定](#環境別設定)
+- [シークレット管理](#シークレット管理)
+- [マイグレーションガイド](#マイグレーションガイド)
 
 ---
 
-## process.env 직접 사용 금지
+## UnifiedConfig概要
 
-### 규칙
+### UnifiedConfigを使用する理由
+
+**process.envの問題点:**
+- ❌ タイプセーフティなし
+- ❌ バリデーションなし
+- ❌ テストしにくい
+- ❌ コード全体に分散
+- ❌ デフォルト値なし
+- ❌ タイポに対するランタイムエラー
+
+**unifiedConfigの利点:**
+- ✅ タイプセーフな設定
+- ✅ 単一の信頼できるソース
+- ✅ 起動時のバリデーション
+- ✅ モックで簡単にテスト
+- ✅ 明確な構造
+- ✅ 環境変数へのフォールバック
+
+---
+
+## process.env直接使用禁止
+
+### ルール
 
 ```typescript
-// ❌ 절대 이렇게 하지 마세요
+// ❌ 絶対にこうしないでください
 const timeout = parseInt(process.env.TIMEOUT_MS || '5000');
 const dbHost = process.env.DB_HOST || 'localhost';
 
-// ✅ 항상 이렇게 하세요
+// ✅ 常にこうしてください
 import { config } from './config/unifiedConfig';
 const timeout = config.timeouts.default;
 const dbHost = config.database.host;
 ```
 
-### 이것이 중요한 이유
+### これが重要な理由
 
-**문제 예시:**
+**問題例:**
 ```typescript
-// 환경 변수 이름 오타
-const host = process.env.DB_HSOT; // undefined! 에러 없음!
+// 環境変数名のタイポ
+const host = process.env.DB_HSOT; // undefined！エラーなし！
 
-// 타입 안전성
-const port = process.env.PORT; // 문자열! parseInt 필요
-const timeout = parseInt(process.env.TIMEOUT); // 설정 안 되면 NaN!
+// タイプセーフティ
+const port = process.env.PORT; // 文字列！parseInt必要
+const timeout = parseInt(process.env.TIMEOUT); // 設定なしだとNaN！
 ```
 
-**unifiedConfig 사용 시:**
+**unifiedConfig使用時:**
 ```typescript
-const port = config.server.port; // number, 보장됨
-const timeout = config.timeouts.default; // number, 폴백 포함
+const port = config.server.port; // number、保証される
+const timeout = config.timeouts.default; // number、フォールバック含む
 ```
 
 ---
 
-## 설정 구조
+## 設定構造
 
-### UnifiedConfig 인터페이스
+### UnifiedConfigインターフェース
 
 ```typescript
 export interface UnifiedConfig {
@@ -109,13 +109,13 @@ export interface UnifiedConfig {
         environment: string;
         tracesSampleRate: number;
     };
-    // ... 더 많은 섹션
+    // ... その他のセクション
 }
 ```
 
-### 구현 패턴
+### 実装パターン
 
-**파일:** `/blog-api/src/config/unifiedConfig.ts`
+**ファイル:** `/blog-api/src/config/unifiedConfig.ts`
 
 ```typescript
 import * as fs from 'fs';
@@ -137,27 +137,27 @@ export const config: UnifiedConfig = {
         port: parseInt(iniConfig.server?.port || process.env.PORT || '3002'),
         sessionSecret: iniConfig.server?.sessionSecret || process.env.SESSION_SECRET || 'dev-secret',
     },
-    // ... 더 많은 설정
+    // ... その他の設定
 };
 
-// 중요 설정 유효성 검사
+// 重要な設定のバリデーション
 if (!config.tokens.jwt) {
     throw new Error('JWT secret not configured!');
 }
 ```
 
-**핵심 포인트:**
-- config.ini에서 먼저 읽기
-- process.env로 폴백
-- 개발용 기본값
-- 시작 시 유효성 검사
-- 타입 안전 액세스
+**キーポイント:**
+- config.iniから最初に読み取り
+- process.envへフォールバック
+- 開発用デフォルト値
+- 起動時のバリデーション
+- タイプセーフなアクセス
 
 ---
 
-## 환경별 설정
+## 環境別設定
 
-### config.ini 구조
+### config.ini構造
 
 ```ini
 [database]
@@ -188,25 +188,25 @@ environment = development
 tracesSampleRate = 0.1
 ```
 
-### 환경 오버라이드
+### 環境オーバーライド
 
 ```bash
-# .env 파일 (선택적 오버라이드)
+# .envファイル（オプションのオーバーライド）
 DB_HOST=production-db.example.com
 DB_PASSWORD=secure-password
 PORT=80
 ```
 
-**우선순위:**
-1. config.ini (최고 우선순위)
-2. process.env 변수
-3. 하드코딩된 기본값 (최저 우선순위)
+**優先順位:**
+1. config.ini（最高優先）
+2. process.env変数
+3. ハードコードされたデフォルト値（最低優先）
 
 ---
 
-## 시크릿 관리
+## シークレット管理
 
-### 시크릿 커밋 금지
+### シークレットをコミットしない
 
 ```gitignore
 # .gitignore
@@ -217,11 +217,11 @@ sentry.ini
 *.key
 ```
 
-### 프로덕션에서 환경 변수 사용
+### 本番環境で環境変数使用
 
 ```typescript
-// 개발: config.ini
-// 프로덕션: 환경 변수
+// 開発: config.ini
+// 本番: 環境変数
 
 export const config: UnifiedConfig = {
     database: {
@@ -235,25 +235,25 @@ export const config: UnifiedConfig = {
 
 ---
 
-## 마이그레이션 가이드
+## マイグレーションガイド
 
-### 모든 process.env 사용 찾기
+### すべてのprocess.env使用を見つける
 
 ```bash
 grep -r "process.env" blog-api/src/ --include="*.ts" | wc -l
 ```
 
-### 마이그레이션 예시
+### マイグレーション例
 
-**이전:**
+**以前:**
 ```typescript
-// 코드 전체에 분산됨
+// コード全体に分散
 const timeout = parseInt(process.env.OPENID_HTTP_TIMEOUT_MS || '15000');
 const keycloakUrl = process.env.KEYCLOAK_BASE_URL;
 const jwtSecret = process.env.JWT_SECRET;
 ```
 
-**이후:**
+**以後:**
 ```typescript
 import { config } from './config/unifiedConfig';
 
@@ -262,14 +262,14 @@ const keycloakUrl = config.keycloak.baseUrl;
 const jwtSecret = config.tokens.jwt;
 ```
 
-**장점:**
-- 타입 안전
-- 중앙 집중화
-- 테스트하기 쉬움
-- 시작 시 유효성 검사
+**利点:**
+- タイプセーフ
+- 中央集権化
+- テストしやすい
+- 起動時のバリデーション
 
 ---
 
-**관련 파일:**
+**関連ファイル:**
 - [SKILL.md](SKILL.md)
 - [testing-guide.md](testing-guide.md)

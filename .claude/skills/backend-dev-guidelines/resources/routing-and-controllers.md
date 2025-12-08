@@ -1,36 +1,36 @@
-# Routing과 Controllers - 모범 사례
+# RoutingとControllers - モベストプラクティス
 
-깔끔한 라우트 정의와 controller 패턴에 대한 완전한 가이드입니다.
+クリーンなルート定義とcontrollerパターンの完全なガイドです。
 
-## 목차
+## 目次
 
-- [Routes: 라우팅만](#routes-라우팅만)
-- [BaseController 패턴](#basecontroller-패턴)
-- [좋은 예시](#좋은-예시)
-- [안티패턴](#안티패턴)
-- [리팩토링 가이드](#리팩토링-가이드)
-- [에러 처리](#에러-처리)
-- [HTTP 상태 코드](#http-상태-코드)
+- [Routes: ルーティングのみ](#routes-ルーティングのみ)
+- [BaseControllerパターン](#basecontrollerパターン)
+- [良い例](#良い例)
+- [アンチパターン](#アンチパターン)
+- [リファクタリングガイド](#リファクタリングガイド)
+- [エラー処理](#エラー処理)
+- [HTTPステータスコード](#httpステータスコード)
 
 ---
 
-## Routes: 라우팅만
+## Routes: ルーティングのみ
 
-### 황금 규칙
+### 黄金ルール
 
-**Routes는 다음만 해야 합니다:**
-- ✅ 라우트 경로 정의
-- ✅ Middleware 등록
-- ✅ Controllers로 위임
+**Routesは次のことのみを行うべき:**
+- ✅ ルートパス定義
+- ✅ Middleware登録
+- ✅ Controllersへの委譲
 
-**Routes는 절대 해서는 안 됩니다:**
-- ❌ 비즈니스 로직 포함
-- ❌ 데이터베이스 직접 액세스
-- ❌ 유효성 검사 로직 구현 (Zod + controller 사용)
-- ❌ 복잡한 응답 포맷팅
-- ❌ 복잡한 에러 시나리오 처리
+**Routesは絶対に行うべきでない:**
+- ❌ ビジネスロジックの含有
+- ❌ データベースへの直接アクセス
+- ❌ バリデーションロジックの実装（Zod + controller使用）
+- ❌ 複雑なレスポンスフォーマット
+- ❌ 複雑なエラーシナリオの処理
 
-### 깔끔한 Route 패턴
+### クリーンなRouteパターン
 
 ```typescript
 // routes/userRoutes.ts
@@ -42,7 +42,7 @@ import { auditMiddleware } from '../middleware/auditMiddleware';
 const router = Router();
 const controller = new UserController();
 
-// ✅ 깔끔함: 라우트 정의만
+// ✅ クリーン: ルート定義のみ
 router.get('/:id',
     SSOMiddlewareClient.verifyLoginStatus,
     auditMiddleware,
@@ -64,29 +64,29 @@ router.put('/:id',
 export default router;
 ```
 
-**핵심 포인트:**
-- 각 route: method, path, middleware chain, controller 위임
-- try-catch 불필요 (controller가 에러 처리)
-- 깔끔하고, 읽기 쉽고, 유지보수 용이
-- 한눈에 모든 엔드포인트 파악 가능
+**キーポイント:**
+- 各route: method、path、middlewareチェーン、controller委譲
+- try-catch不要（controllerがエラー処理）
+- クリーンで、読みやすく、保守しやすい
+- 一目ですべてのエンドポイントを把握可能
 
 ---
 
-## BaseController 패턴
+## BaseControllerパターン
 
-### BaseController를 사용하는 이유
+### BaseControllerを使用する理由
 
-**장점:**
-- 모든 controllers에서 일관된 에러 처리
-- 자동 Sentry 통합
-- 표준화된 응답 포맷
-- 재사용 가능한 헬퍼 메서드
-- 성능 추적 유틸리티
-- 로깅과 breadcrumb 헬퍼
+**利点:**
+- すべてのcontrollersで一貫したエラー処理
+- 自動Sentry統合
+- 標準化されたレスポンスフォーマット
+- 再利用可能なヘルパーメソッド
+- パフォーマンス追跡ユーティリティ
+- ロギングとbreadcrumbヘルパー
 
-### BaseController 패턴 (템플릿)
+### BaseControllerパターン（テンプレート）
 
-**파일:** `/email/src/controllers/BaseController.ts`
+**ファイル:** `/email/src/controllers/BaseController.ts`
 
 ```typescript
 import * as Sentry from '@sentry/node';
@@ -94,7 +94,7 @@ import { Response } from 'express';
 
 export abstract class BaseController {
     /**
-     * Sentry 통합으로 에러 처리
+     * Sentry統合でエラー処理
      */
     protected handleError(
         error: unknown,
@@ -127,7 +127,7 @@ export abstract class BaseController {
     }
 
     /**
-     * 성공 응답 처리
+     * 成功レスポンス処理
      */
     protected handleSuccess<T>(
         res: Response,
@@ -143,7 +143,7 @@ export abstract class BaseController {
     }
 
     /**
-     * 성능 추적 wrapper
+     * パフォーマンス追跡ラッパー
      */
     protected async withTransaction<T>(
         name: string,
@@ -157,7 +157,7 @@ export abstract class BaseController {
     }
 
     /**
-     * 필수 필드 유효성 검사
+     * 必須フィールドバリデーション
      */
     protected validateRequest(
         required: string[],
@@ -186,7 +186,7 @@ export abstract class BaseController {
     }
 
     /**
-     * 로깅 헬퍼
+     * ロギングヘルパー
      */
     protected logInfo(message: string, context?: Record<string, any>): void {
         Sentry.addBreadcrumb({
@@ -206,7 +206,7 @@ export abstract class BaseController {
     }
 
     /**
-     * Sentry breadcrumb 추가
+     * Sentry breadcrumb追加
      */
     protected addBreadcrumb(
         message: string,
@@ -217,7 +217,7 @@ export abstract class BaseController {
     }
 
     /**
-     * 커스텀 메트릭 캡처
+     * カスタムメトリクスキャプチャ
      */
     protected captureMetric(name: string, value: number, unit: string): void {
         Sentry.metrics.gauge(name, value, { unit });
@@ -225,7 +225,7 @@ export abstract class BaseController {
 }
 ```
 
-### BaseController 사용하기
+### BaseControllerの使用
 
 ```typescript
 // controllers/UserController.ts
@@ -265,10 +265,10 @@ export class UserController extends BaseController {
 
     async createUser(req: Request, res: Response): Promise<void> {
         try {
-            // 입력 유효성 검사
+            // 入力バリデーション
             const validated = createUserSchema.parse(req.body);
 
-            // 성능 추적
+            // パフォーマンス追跡
             const user = await this.withTransaction(
                 'user.create',
                 'db.query',
@@ -293,20 +293,20 @@ export class UserController extends BaseController {
 }
 ```
 
-**장점:**
-- 일관된 에러 처리
-- 자동 Sentry 통합
-- 성능 추적
-- 깔끔하고 읽기 쉬운 코드
-- 테스트하기 쉬움
+**利点:**
+- 一貫したエラー処理
+- 自動Sentry統合
+- パフォーマンス追跡
+- クリーンで読みやすいコード
+- テストしやすい
 
 ---
 
-## 좋은 예시
+## 良い例
 
-### 예시 1: Email Notification Routes (훌륭함 ✅)
+### 例1: Email Notification Routes（優れている ✅）
 
-**파일:** `/email/src/routes/notificationRoutes.ts`
+**ファイル:** `/email/src/routes/notificationRoutes.ts`
 
 ```typescript
 import { Router } from 'express';
@@ -316,7 +316,7 @@ import { SSOMiddlewareClient } from '../middleware/SSOMiddleware';
 const router = Router();
 const controller = new NotificationController();
 
-// ✅ 훌륭함: 깔끔한 위임
+// ✅ 優れている: クリーンな委譲
 router.get('/',
     SSOMiddlewareClient.verifyLoginStatus,
     async (req, res) => controller.getNotifications(req, res)
@@ -335,15 +335,15 @@ router.put('/:id/read',
 export default router;
 ```
 
-**훌륭한 이유:**
-- Routes에 비즈니스 로직 없음
-- 명확한 middleware 체인
-- 일관된 패턴
-- 이해하기 쉬움
+**優れている理由:**
+- Routesにビジネスロジックなし
+- 明確なmiddlewareチェーン
+- 一貫したパターン
+- 理解しやすい
 
-### 예시 2: 유효성 검사가 있는 Proxy Routes (좋음 ✅)
+### 例2: バリデーション付きProxy Routes（良い ✅）
 
-**파일:** `/form/src/routes/proxyRoutes.ts`
+**ファイル:** `/form/src/routes/proxyRoutes.ts`
 
 ```typescript
 import { z } from 'zod';
@@ -369,40 +369,40 @@ router.post('/',
 );
 ```
 
-**좋은 이유:**
-- Zod 유효성 검사
-- Service로 위임
-- 적절한 HTTP 상태 코드
-- 에러 처리
+**良い理由:**
+- Zodバリデーション
+- Serviceへの委譲
+- 適切なHTTPステータスコード
+- エラー処理
 
-**개선할 수 있는 점:**
-- 유효성 검사를 controller로 이동
-- BaseController 사용
+**改善できる点:**
+- バリデーションをcontrollerに移動
+- BaseController使用
 
 ---
 
-## 안티패턴
+## アンチパターン
 
-### 안티패턴 1: Routes에 비즈니스 로직 (나쁨 ❌)
+### アンチパターン1: Routesにビジネスロジック（悪い ❌）
 
-**파일:** `/form/src/routes/responseRoutes.ts` (실제 프로덕션 코드)
+**ファイル:** `/form/src/routes/responseRoutes.ts`（実際のプロダクションコード）
 
 ```typescript
-// ❌ 안티패턴: route에 200줄 이상의 비즈니스 로직
+// ❌ アンチパターン: routeに200行以上のビジネスロジック
 router.post('/:formID/submit', async (req: Request, res: Response) => {
     try {
         const username = res.locals.claims.preferred_username;
         const responses = req.body.responses;
         const stepInstanceId = req.body.stepInstanceId;
 
-        // ❌ Route에서 권한 확인
+        // ❌ Routeで権限確認
         const userId = await userProfileService.getProfileByEmail(username).then(p => p.id);
         const canComplete = await permissionService.canCompleteStep(userId, stepInstanceId);
         if (!canComplete) {
             return res.status(403).json({ error: 'No permission' });
         }
 
-        // ❌ Route에서 Workflow 로직
+        // ❌ RouteでWorkflowロジック
         const { createWorkflowEngine, CompleteStepCommand } = require('../workflow/core/WorkflowEngineV3');
         const engine = await createWorkflowEngine();
         const command = new CompleteStepCommand(
@@ -413,7 +413,7 @@ router.post('/:formID/submit', async (req: Request, res: Response) => {
         );
         const events = await engine.executeCommand(command);
 
-        // ❌ Route에서 Impersonation 처리
+        // ❌ RouteでImpersonation処理
         if (res.locals.isImpersonating) {
             impersonationContextStore.storeContext(stepInstanceId, {
                 originalUserId: res.locals.originalUserId,
@@ -421,16 +421,16 @@ router.post('/:formID/submit', async (req: Request, res: Response) => {
             });
         }
 
-        // ❌ Route에서 응답 처리
+        // ❌ Routeでレスポンス処理
         const post = await PrismaService.main.post.findUnique({
             where: { id: postData.id },
             include: { comments: true },
         });
 
-        // ❌ Route에서 권한 확인
+        // ❌ Routeで権限確認
         await checkPostPermissions(post, userId);
 
-        // ... 100줄 이상의 비즈니스 로직
+        // ... 100行以上のビジネスロジック
 
         res.json({ success: true, data: result });
     } catch (e) {
@@ -439,17 +439,17 @@ router.post('/:formID/submit', async (req: Request, res: Response) => {
 });
 ```
 
-**왜 끔찍한가:**
-- 200줄 이상의 비즈니스 로직
-- 테스트하기 어려움 (HTTP 모킹 필요)
-- 재사용하기 어려움 (route에 종속)
-- 혼합된 책임
-- 디버깅하기 어려움
-- 성능 추적하기 어려움
+**なぜ酷いのか:**
+- 200行以上のビジネスロジック
+- テストしにくい（HTTPモッキングが必要）
+- 再利用しにくい（routeに依存）
+- 混在した責任
+- デバッグしにくい
+- パフォーマンス追跡しにくい
 
-### 리팩토링 방법 (단계별)
+### リファクタリング方法（ステップバイステップ）
 
-**단계 1: Controller 생성**
+**ステップ1: Controller作成**
 
 ```typescript
 // controllers/PostController.ts
@@ -480,7 +480,7 @@ export class PostController extends BaseController {
 }
 ```
 
-**단계 2: Service 생성**
+**ステップ2: Service作成**
 
 ```typescript
 // services/postService.ts
@@ -489,23 +489,23 @@ export class PostService {
         data: CreatePostDTO,
         userId: string
     ): Promise<PostResult> {
-        // 권한 확인
+        // 権限確認
         const canCreate = await permissionService.canCreatePost(userId);
         if (!canCreate) {
             throw new ForbiddenError('No permission to create post');
         }
 
-        // Workflow 실행
+        // Workflow実行
         const engine = await createWorkflowEngine();
         const command = new CompleteStepCommand(/* ... */);
         const events = await engine.executeCommand(command);
 
-        // 필요한 경우 impersonation 처리
+        // 必要に応じてimpersonation処理
         if (context.isImpersonating) {
             await this.handleImpersonation(data.stepInstanceId, context);
         }
 
-        // 역할 동기화
+        // ロール同期
         await this.synchronizeRoles(events, userId);
 
         return { events, success: true };
@@ -519,12 +519,12 @@ export class PostService {
     }
 
     private async synchronizeRoles(events: WorkflowEvent[], userId: string) {
-        // 역할 동기화 로직
+        // ロール同期ロジック
     }
 }
 ```
 
-**단계 3: Route 업데이트**
+**ステップ3: Route更新**
 
 ```typescript
 // routes/postRoutes.ts
@@ -533,7 +533,7 @@ import { PostController } from '../controllers/PostController';
 const router = Router();
 const controller = new PostController();
 
-// ✅ 깔끔함: 라우팅만
+// ✅ クリーン: ルーティングのみ
 router.post('/',
     SSOMiddlewareClient.verifyLoginStatus,
     auditMiddleware,
@@ -541,17 +541,17 @@ router.post('/',
 );
 ```
 
-**결과:**
-- Route: 8줄 (200줄 이상이었음)
-- Controller: 25줄 (요청 처리)
-- Service: 50줄 (비즈니스 로직)
-- 테스트 가능, 재사용 가능, 유지보수 가능!
+**結果:**
+- Route: 8行（200行以上だった）
+- Controller: 25行（リクエスト処理）
+- Service: 50行（ビジネスロジック）
+- テスト可能、再利用可能、保守可能！
 
 ---
 
-## 에러 처리
+## エラー処理
 
-### Controller 에러 처리
+### Controllerエラー処理
 
 ```typescript
 async createUser(req: Request, res: Response): Promise<void> {
@@ -559,16 +559,16 @@ async createUser(req: Request, res: Response): Promise<void> {
         const result = await this.userService.create(req.body);
         this.handleSuccess(res, result, 'User created', 201);
     } catch (error) {
-        // BaseController.handleError가 자동으로:
-        // - 컨텍스트와 함께 Sentry에 캡처
-        // - 적절한 상태 코드 설정
-        // - 포맷된 에러 응답 반환
+        // BaseController.handleErrorが自動的に:
+        // - コンテキストとともにSentryにキャプチャ
+        // - 適切なステータスコード設定
+        // - フォーマットされたエラーレスポンス返却
         this.handleError(error, res, 'createUser');
     }
 }
 ```
 
-### 커스텀 에러 상태 코드
+### カスタムエラーステータスコード
 
 ```typescript
 async getUser(req: Request, res: Response): Promise<void> {
@@ -576,12 +576,12 @@ async getUser(req: Request, res: Response): Promise<void> {
         const user = await this.userService.findById(req.params.id);
 
         if (!user) {
-            // 커스텀 404 상태
+            // カスタム404ステータス
             return this.handleError(
                 new Error('User not found'),
                 res,
                 'getUser',
-                404  // 커스텀 상태 코드
+                404  // カスタムステータスコード
             );
         }
 
@@ -592,7 +592,7 @@ async getUser(req: Request, res: Response): Promise<void> {
 }
 ```
 
-### 유효성 검사 에러
+### バリデーションエラー
 
 ```typescript
 async createUser(req: Request, res: Response): Promise<void> {
@@ -601,7 +601,7 @@ async createUser(req: Request, res: Response): Promise<void> {
         const user = await this.userService.create(validated);
         this.handleSuccess(res, user, 'User created', 201);
     } catch (error) {
-        // Zod 에러는 400 상태
+        // Zodエラーは400ステータス
         if (error instanceof z.ZodError) {
             return this.handleError(error, res, 'createUser', 400);
         }
@@ -612,81 +612,81 @@ async createUser(req: Request, res: Response): Promise<void> {
 
 ---
 
-## HTTP 상태 코드
+## HTTPステータスコード
 
-### 표준 코드
+### 標準コード
 
-| 코드 | 사용 케이스 | 예시 |
+| コード | ユースケース | 例 |
 |------|----------|---------|
-| 200 | 성공 (GET, PUT) | 사용자 조회, 업데이트 |
-| 201 | 생성됨 (POST) | 사용자 생성 |
-| 204 | 내용 없음 (DELETE) | 사용자 삭제 |
-| 400 | 잘못된 요청 | 유효하지 않은 입력 데이터 |
-| 401 | 인증 안 됨 | 인증되지 않음 |
-| 403 | 금지됨 | 권한 없음 |
-| 404 | 찾을 수 없음 | 리소스가 존재하지 않음 |
-| 409 | 충돌 | 중복 리소스 |
-| 422 | 처리할 수 없는 엔티티 | 유효성 검사 실패 |
-| 500 | 내부 서버 에러 | 예상치 못한 에러 |
+| 200 | 成功（GET、PUT） | ユーザー取得、更新 |
+| 201 | 作成完了（POST） | ユーザー作成 |
+| 204 | 内容なし（DELETE） | ユーザー削除 |
+| 400 | 不正なリクエスト | 無効な入力データ |
+| 401 | 認証なし | 認証されていない |
+| 403 | 禁止 | 権限なし |
+| 404 | 見つからない | リソースが存在しない |
+| 409 | 競合 | 重複リソース |
+| 422 | 処理できないエンティティ | バリデーション失敗 |
+| 500 | 内部サーバーエラー | 予期しないエラー |
 
-### 사용 예시
+### 使用例
 
 ```typescript
-// 200 - 성공 (기본값)
+// 200 - 成功（デフォルト）
 this.handleSuccess(res, user);
 
-// 201 - 생성됨
+// 201 - 作成完了
 this.handleSuccess(res, user, 'Created', 201);
 
-// 400 - 잘못된 요청
+// 400 - 不正なリクエスト
 this.handleError(error, res, 'operation', 400);
 
-// 404 - 찾을 수 없음
+// 404 - 見つからない
 this.handleError(new Error('Not found'), res, 'operation', 404);
 
-// 403 - 금지됨
+// 403 - 禁止
 this.handleError(new ForbiddenError('No permission'), res, 'operation', 403);
 ```
 
 ---
 
-## 리팩토링 가이드
+## リファクタリングガイド
 
-### 리팩토링이 필요한 Routes 식별
+### リファクタリングが必要なRoutesの識別
 
-**위험 신호:**
-- Route 파일 > 100줄
-- 하나의 route에 여러 try-catch 블록
-- 직접 데이터베이스 액세스 (Prisma 호출)
-- 복잡한 비즈니스 로직 (if 문, 루프)
-- Routes에서 권한 확인
+**危険信号:**
+- Routeファイル > 100行
+- 1つのrouteに複数のtry-catchブロック
+- 直接データベースアクセス（Prisma呼び出し）
+- 複雑なビジネスロジック（if文、ループ）
+- Routesでの権限確認
 
-**routes 확인:**
+**routes確認:**
 ```bash
-# 큰 route 파일 찾기
+# 大きなrouteファイルを見つける
 wc -l form/src/routes/*.ts | sort -n
 
-# Prisma 사용이 있는 routes 찾기
+# Prisma使用があるroutesを見つける
 grep -r "PrismaService" form/src/routes/
 ```
 
-### 리팩토링 프로세스
+### リファクタリングプロセス
 
-**1. Controller로 추출:**
+**1. Controllerに抽出:**
 ```typescript
-// 이전: 로직이 있는 Route
+// 以前: ロジックがあるRoute
 router.post('/action', async (req, res) => {
     try {
-        // 50줄의 로직
+        // 50行のロジック
     } catch (e) {
         handler.handleException(res, e);
     }
 });
 
-// 이후: 깔끔한 route
+// 以後: クリーンなroute
 router.post('/action', (req, res) => controller.performAction(req, res));
 
-// 새 controller 메서드
+// 新しいcontrollerメソッド
 async performAction(req: Request, res: Response): Promise<void> {
     try {
         const result = await this.service.performAction(req.body);
@@ -697,9 +697,9 @@ async performAction(req: Request, res: Response): Promise<void> {
 }
 ```
 
-**2. Service로 추출:**
+**2. Serviceに抽出:**
 ```typescript
-// Controller는 얇게 유지
+// Controllerは薄く保つ
 async performAction(req: Request, res: Response): Promise<void> {
     try {
         const validated = actionSchema.parse(req.body);
@@ -710,33 +710,33 @@ async performAction(req: Request, res: Response): Promise<void> {
     }
 }
 
-// Service가 비즈니스 로직 포함
+// Serviceがビジネスロジックを含む
 export class ActionService {
     async execute(data: ActionDTO): Promise<Result> {
-        // 모든 비즈니스 로직은 여기
-        // 권한 확인
-        // 데이터베이스 작업
-        // 복잡한 변환
+        // すべてのビジネスロジックはここ
+        // 権限確認
+        // データベース操作
+        // 複雑な変換
         return result;
     }
 }
 ```
 
-**3. Repository 추가 (필요한 경우):**
+**3. Repository追加（必要な場合）:**
 ```typescript
-// Service가 repository 호출
+// Serviceがrepositoryを呼び出す
 export class ActionService {
     constructor(private actionRepository: ActionRepository) {}
 
     async execute(data: ActionDTO): Promise<Result> {
-        // 비즈니스 로직
+        // ビジネスロジック
         const entity = await this.actionRepository.findById(data.id);
-        // 더 많은 로직
+        // さらなるロジック
         return await this.actionRepository.update(data.id, changes);
     }
 }
 
-// Repository가 데이터 액세스 처리
+// Repositoryがデータアクセスを処理
 export class ActionRepository {
     async findById(id: number): Promise<Entity | null> {
         return PrismaService.main.entity.findUnique({ where: { id } });
@@ -750,7 +750,7 @@ export class ActionRepository {
 
 ---
 
-**관련 파일:**
-- [SKILL.md](SKILL.md) - 메인 가이드
-- [services-and-repositories.md](services-and-repositories.md) - Service 계층 세부사항
-- [complete-examples.md](complete-examples.md) - 전체 리팩토링 예제
+**関連ファイル:**
+- [SKILL.md](SKILL.md) - メインガイド
+- [services-and-repositories.md](services-and-repositories.md) - Serviceレイヤーの詳細
+- [complete-examples.md](complete-examples.md) - 完全なリファクタリング例

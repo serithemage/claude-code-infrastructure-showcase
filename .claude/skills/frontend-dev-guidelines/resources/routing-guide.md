@@ -1,57 +1,57 @@
-# Routing 가이드
+# Routing ガイド
 
-TanStack Router 구현과 폴더 기반 라우팅 및 lazy loading 패턴입니다.
+TanStack Router 実装とフォルダベースルーティングおよび lazy loading パターンです。
 
 ---
 
-## TanStack Router 개요
+## TanStack Router 概要
 
-파일 기반 라우팅이 있는 **TanStack Router**:
-- 폴더 구조가 routes를 정의
-- 코드 스플리팅을 위한 Lazy loading
-- 타입 안전 라우팅
+ファイルベースルーティングがある **TanStack Router**:
+- フォルダ構造が routes を定義
+- コード分割のための Lazy loading
+- 型安全ルーティング
 - Breadcrumb loaders
 
 ---
 
-## 폴더 기반 라우팅
+## フォルダベースルーティング
 
-### 디렉토리 구조
+### ディレクトリ構造
 
 ```
 routes/
-  __root.tsx                    # 루트 레이아웃
-  index.tsx                     # 홈 route (/)
+  __root.tsx                    # ルートレイアウト
+  index.tsx                     # ホーム route (/)
   posts/
     index.tsx                   # /posts
     create/
       index.tsx                 # /posts/create
-    $postId.tsx                 # /posts/:postId (동적)
+    $postId.tsx                 # /posts/:postId (動的)
   comments/
     index.tsx                   # /comments
 ```
 
-**패턴**:
-- `index.tsx` = 해당 경로의 Route
-- `$param.tsx` = 동적 파라미터
-- 중첩 폴더 = 중첩 routes
+**パターン**:
+- `index.tsx` = そのパスの Route
+- `$param.tsx` = 動的パラメータ
+- ネストフォルダ = ネスト routes
 
 ---
 
-## 기본 Route 패턴
+## 基本 Route パターン
 
-### posts/index.tsx 예시
+### posts/index.tsx 例
 
 ```typescript
 /**
- * Posts route 컴포넌트
- * 메인 블로그 포스트 목록 표시
+ * Posts route コンポーネント
+ * メインブログポストリスト表示
  */
 
 import { createFileRoute } from '@tanstack/react-router';
 import { lazy } from 'react';
 
-// 페이지 컴포넌트 Lazy load
+// ページコンポーネント Lazy load
 const PostsList = lazy(() =>
     import('@/features/posts/components/PostsList').then(
         (module) => ({ default: module.PostsList }),
@@ -60,7 +60,7 @@ const PostsList = lazy(() =>
 
 export const Route = createFileRoute('/posts/')(({
     component: PostsPage,
-    // Breadcrumb 데이터 정의
+    // Breadcrumb データ定義
     loader: () => ({
         crumb: 'Posts',
     }),
@@ -78,23 +78,23 @@ function PostsPage() {
 export default PostsPage;
 ```
 
-**핵심 포인트:**
-- 무거운 컴포넌트 lazy load
-- route 경로와 함께 `createFileRoute`
-- breadcrumb 데이터용 `loader`
-- Page 컴포넌트가 콘텐츠 렌더
-- Route와 컴포넌트 둘 다 export
+**キーポイント:**
+- 重いコンポーネント lazy load
+- route パスと共に `createFileRoute`
+- breadcrumb データ用 `loader`
+- Page コンポーネントがコンテンツレンダー
+- Route とコンポーネント両方を export
 
 ---
 
 ## Lazy Loading Routes
 
-### Named Export 패턴
+### Named Export パターン
 
 ```typescript
 import { lazy } from 'react';
 
-// named exports의 경우 .then()으로 default에 매핑
+// named exports の場合 .then() で default にマッピング
 const MyPage = lazy(() =>
     import('@/features/my-feature/components/MyPage').then(
         (module) => ({ default: module.MyPage })
@@ -102,27 +102,27 @@ const MyPage = lazy(() =>
 );
 ```
 
-### Default Export 패턴
+### Default Export パターン
 
 ```typescript
 import { lazy } from 'react';
 
-// default exports의 경우 더 간단한 문법
+// default exports の場合より簡単な文法
 const MyPage = lazy(() => import('@/features/my-feature/components/MyPage'));
 ```
 
-### Routes를 Lazy Load하는 이유
+### Routes を Lazy Load する理由
 
-- 코드 스플리팅 - 더 작은 초기 번들
-- 더 빠른 초기 페이지 로드
-- 네비게이션할 때만 route 코드 로드
-- 더 나은 성능
+- コード分割 - より小さい初期バンドル
+- より速い初期ページロード
+- ナビゲーション時のみ route コードロード
+- より良いパフォーマンス
 
 ---
 
 ## createFileRoute
 
-### 기본 설정
+### 基本設定
 
 ```typescript
 export const Route = createFileRoute('/my-route/')(({
@@ -134,7 +134,7 @@ function MyRoutePage() {
 }
 ```
 
-### Breadcrumb Loader와 함께
+### Breadcrumb Loader と共に
 
 ```typescript
 export const Route = createFileRoute('/my-route/')(({
@@ -145,22 +145,22 @@ export const Route = createFileRoute('/my-route/')(({
 });
 ```
 
-Breadcrumb이 네비게이션/앱 바에 자동으로 표시됩니다.
+Breadcrumb がナビゲーション/アプリバーに自動的に表示されます。
 
-### 데이터 Loader와 함께
+### データ Loader と共に
 
 ```typescript
 export const Route = createFileRoute('/my-route/')(({
     component: MyRoutePage,
     loader: async () => {
-        // 여기서 데이터 prefetch 가능
+        // ここでデータ prefetch 可能
         const data = await api.getData();
         return { crumb: 'My Route', data };
     },
 });
 ```
 
-### Search Params와 함께
+### Search Params と共に
 
 ```typescript
 export const Route = createFileRoute('/search/')(({
@@ -175,15 +175,15 @@ export const Route = createFileRoute('/search/')(({
 
 function SearchPage() {
     const { query, page } = Route.useSearch();
-    // query와 page 사용
+    // query と page 使用
 }
 ```
 
 ---
 
-## 동적 Routes
+## 動的 Routes
 
-### 파라미터 Routes
+### パラメータ Routes
 
 ```typescript
 // routes/users/$userId.tsx
@@ -199,7 +199,7 @@ function UserPage() {
 }
 ```
 
-### 여러 파라미터
+### 複数パラメータ
 
 ```typescript
 // routes/posts/$postId/comments/$commentId.tsx
@@ -217,9 +217,9 @@ function CommentPage() {
 
 ---
 
-## 네비게이션
+## ナビゲーション
 
-### 프로그래매틱 네비게이션
+### プログラマティックナビゲーション
 
 ```typescript
 import { useNavigate } from '@tanstack/react-router';
@@ -235,7 +235,7 @@ export const MyComponent: React.FC = () => {
 };
 ```
 
-### 파라미터와 함께
+### パラメータと共に
 
 ```typescript
 const handleNavigate = () => {
@@ -246,7 +246,7 @@ const handleNavigate = () => {
 };
 ```
 
-### Search Params와 함께
+### Search Params と共に
 
 ```typescript
 const handleSearch = () => {
@@ -259,9 +259,9 @@ const handleSearch = () => {
 
 ---
 
-## Route 레이아웃 패턴
+## Route レイアウトパターン
 
-### 루트 레이아웃 (__root.tsx)
+### ルートレイアウト (__root.tsx)
 
 ```typescript
 import { createRootRoute, Outlet } from '@tanstack/react-router';
@@ -277,14 +277,14 @@ function RootLayout() {
         <Box>
             <CustomAppBar />
             <Box sx={{ p: 2 }}>
-                <Outlet />  {/* 자식 routes가 여기서 렌더 */}
+                <Outlet />  {/* 子 routes がここでレンダー */}
             </Box>
         </Box>
     );
 }
 ```
 
-### 중첩 레이아웃
+### ネストレイアウト
 
 ```typescript
 // routes/dashboard/index.tsx
@@ -297,7 +297,7 @@ function DashboardLayout() {
         <Box>
             <DashboardSidebar />
             <Box sx={{ flex: 1 }}>
-                <Outlet />  {/* 중첩 routes */}
+                <Outlet />  {/* ネスト routes */}
             </Box>
         </Box>
     );
@@ -306,19 +306,19 @@ function DashboardLayout() {
 
 ---
 
-## 완전한 Route 예시
+## 完全な Route 例
 
 ```typescript
 /**
  * User profile route
- * 경로: /users/:userId
+ * パス: /users/:userId
  */
 
 import { createFileRoute } from '@tanstack/react-router';
 import { lazy } from 'react';
 import { SuspenseLoader } from '~components/SuspenseLoader';
 
-// 무거운 컴포넌트 Lazy load
+// 重いコンポーネント Lazy load
 const UserProfile = lazy(() =>
     import('@/features/users/components/UserProfile').then(
         (module) => ({ default: module.UserProfile })
@@ -347,18 +347,18 @@ export default UserPage;
 
 ---
 
-## 요약
+## まとめ
 
-**Routing 체크리스트:**
-- ✅ 폴더 기반: `routes/my-route/index.tsx`
-- ✅ 컴포넌트 Lazy load: `React.lazy(() => import())`
-- ✅ route 경로와 함께 `createFileRoute` 사용
-- ✅ `loader` 함수에 breadcrumb 추가
-- ✅ 로딩 상태를 위해 `SuspenseLoader`로 감싸기
-- ✅ 동적 params에 `Route.useParams()` 사용
-- ✅ 프로그래매틱 네비게이션에 `useNavigate()` 사용
+**Routing チェックリスト:**
+- ✅ フォルダベース: `routes/my-route/index.tsx`
+- ✅ コンポーネント Lazy load: `React.lazy(() => import())`
+- ✅ route パスと共に `createFileRoute` 使用
+- ✅ `loader` 関数に breadcrumb 追加
+- ✅ ローディング状態のために `SuspenseLoader` でラップ
+- ✅ 動的 params に `Route.useParams()` 使用
+- ✅ プログラマティックナビゲーションに `useNavigate()` 使用
 
-**참고:**
-- [component-patterns.md](component-patterns.md) - Lazy loading 패턴
-- [loading-and-error-states.md](loading-and-error-states.md) - SuspenseLoader 사용
-- [complete-examples.md](complete-examples.md) - 전체 route 예제
+**参考:**
+- [component-patterns.md](component-patterns.md) - Lazy loading パターン
+- [loading-and-error-states.md](loading-and-error-states.md) - SuspenseLoader 使用
+- [complete-examples.md](complete-examples.md) - 完全 route 例

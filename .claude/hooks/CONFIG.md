@@ -1,12 +1,12 @@
-# Hooks 설정 가이드
+# Hooks 設定ガイド
 
-이 가이드는 프로젝트에서 hooks 시스템을 설정하고 커스터마이징하는 방법을 설명합니다.
+このガイドでは、プロジェクトでhooksシステムを設定しカスタマイズする方法を説明します。
 
-## 빠른 시작 설정
+## クイックスタート設定
 
-### 1. .claude/settings.json에 Hooks 등록
+### 1. .claude/settings.jsonにHooksを登録
 
-프로젝트 루트에 `.claude/settings.json`을 생성하거나 업데이트하세요:
+プロジェクトルートに`.claude/settings.json`を作成または更新してください：
 
 ```json
 {
@@ -54,75 +54,75 @@
 }
 ```
 
-### 2. 의존성 설치
+### 2. 依存関係のインストール
 
 ```bash
 cd .claude/hooks
 npm install
 ```
 
-### 3. 실행 권한 설정
+### 3. 実行権限の設定
 
 ```bash
 chmod +x .claude/hooks/*.sh
 ```
 
-## 커스터마이징 옵션
+## カスタマイズオプション
 
-### 프로젝트 구조 감지
+### プロジェクト構造の検出
 
-기본적으로 hooks는 다음 디렉토리 패턴을 감지합니다:
+デフォルトでhooksは以下のディレクトリパターンを検出します：
 
 **Frontend:** `frontend/`, `client/`, `web/`, `app/`, `ui/`
 **Backend:** `backend/`, `server/`, `api/`, `src/`, `services/`
 **Database:** `database/`, `prisma/`, `migrations/`
 **Monorepo:** `packages/*`, `examples/*`
 
-#### 커스텀 디렉토리 패턴 추가
+#### カスタムディレクトリパターンの追加
 
-`.claude/hooks/post-tool-use-tracker.sh`의 `detect_repo()` 함수를 수정하세요:
+`.claude/hooks/post-tool-use-tracker.sh`の`detect_repo()`関数を修正してください：
 
 ```bash
 case "$repo" in
-    # 여기에 커스텀 디렉토리 추가
+    # ここにカスタムディレクトリを追加
     my-custom-service)
         echo "$repo"
         ;;
     admin-panel)
         echo "$repo"
         ;;
-    # ... 기존 패턴
+    # ... 既存のパターン
 esac
 ```
 
-### 빌드 명령어 감지
+### ビルドコマンドの検出
 
-Hooks는 다음을 기반으로 빌드 명령어를 자동 감지합니다:
-1. "build" 스크립트가 있는 `package.json`의 존재 여부
-2. 패키지 매니저 (pnpm > npm > yarn)
-3. 특수 케이스 (Prisma 스키마)
+Hooksは以下に基づいてビルドコマンドを自動検出します：
+1. "build"スクリプトがある`package.json`の存在
+2. パッケージマネージャー (pnpm > npm > yarn)
+3. 特殊ケース (Prisma schema)
 
-#### 빌드 명령어 커스터마이징
+#### ビルドコマンドのカスタマイズ
 
-`.claude/hooks/post-tool-use-tracker.sh`의 `get_build_command()` 함수를 수정하세요:
+`.claude/hooks/post-tool-use-tracker.sh`の`get_build_command()`関数を修正してください：
 
 ```bash
-# 커스텀 빌드 로직 추가
+# カスタムビルドロジックを追加
 if [[ "$repo" == "my-service" ]]; then
     echo "cd $repo_path && make build"
     return
 fi
 ```
 
-### TypeScript 설정
+### TypeScript設定
 
-Hooks는 자동으로 감지합니다:
-- 표준 TypeScript 프로젝트용 `tsconfig.json`
-- Vite/React 프로젝트용 `tsconfig.app.json`
+Hooksは自動的に検出します：
+- 標準TypeScriptプロジェクト用の`tsconfig.json`
+- Vite/Reactプロジェクト用の`tsconfig.app.json`
 
-#### 커스텀 TypeScript 설정
+#### カスタムTypeScript設定
 
-`.claude/hooks/post-tool-use-tracker.sh`의 `get_tsc_command()` 함수를 수정하세요:
+`.claude/hooks/post-tool-use-tracker.sh`の`get_tsc_command()`関数を修正してください：
 
 ```bash
 if [[ "$repo" == "my-service" ]]; then
@@ -131,98 +131,98 @@ if [[ "$repo" == "my-service" ]]; then
 fi
 ```
 
-### Prettier 설정
+### Prettier設定
 
-Prettier hook은 다음 순서로 설정을 검색합니다:
-1. 현재 파일 디렉토리 (상위로 탐색)
-2. 프로젝트 루트
-3. Prettier 기본값으로 폴백
+Prettier hookは以下の順序で設定を検索します：
+1. 現在のファイルディレクトリ（上位へ探索）
+2. プロジェクトルート
+3. Prettierデフォルトにフォールバック
 
-#### 커스텀 Prettier 설정 검색
+#### カスタムPrettier設定の検索
 
-`.claude/hooks/stop-prettier-formatter.sh`의 `get_prettier_config()` 함수를 수정하세요:
+`.claude/hooks/stop-prettier-formatter.sh`の`get_prettier_config()`関数を修正してください：
 
 ```bash
-# 커스텀 설정 위치 추가
+# カスタム設定場所を追加
 if [[ -f "$project_root/config/.prettierrc" ]]; then
     echo "$project_root/config/.prettierrc"
     return
 fi
 ```
 
-### 에러 처리 리마인더
+### エラー処理リマインダー
 
-`.claude/hooks/error-handling-reminder.ts`에서 파일 카테고리 감지를 설정하세요:
+`.claude/hooks/error-handling-reminder.ts`でファイルカテゴリ検出を設定してください：
 
 ```typescript
 function getFileCategory(filePath: string): 'backend' | 'frontend' | 'database' | 'other' {
-    // 커스텀 패턴 추가
+    // カスタムパターンを追加
     if (filePath.includes('/my-custom-dir/')) return 'backend';
-    // ... 기존 패턴
+    // ... 既存のパターン
 }
 ```
 
-### 에러 임계값 설정
+### エラー閾値の設定
 
-auto-error-resolver agent 추천 시점을 변경합니다.
+auto-error-resolver agent推奨タイミングを変更します。
 
-`.claude/hooks/stop-build-check-enhanced.sh`를 수정하세요:
+`.claude/hooks/stop-build-check-enhanced.sh`を修正してください：
 
 ```bash
-# 기본값은 5개 에러 - 원하는 값으로 변경
-if [[ $total_errors -ge 10 ]]; then  # 이제 10개 이상의 에러 필요
-    # agent 추천
+# デフォルトは5エラー - 希望の値に変更
+if [[ $total_errors -ge 10 ]]; then  # 今は10以上のエラーが必要
+    # agent推奨
 fi
 ```
 
-## 환경 변수
+## 環境変数
 
-### 전역 환경 변수
+### グローバル環境変数
 
-쉘 프로필 (`.bashrc`, `.zshrc` 등)에 설정하세요:
+シェルプロファイル（`.bashrc`、`.zshrc`など）に設定してください：
 
 ```bash
-# 에러 처리 리마인더 비활성화
+# エラー処理リマインダーを無効化
 export SKIP_ERROR_REMINDER=1
 
-# 커스텀 프로젝트 디렉토리 (기본값을 사용하지 않는 경우)
+# カスタムプロジェクトディレクトリ（デフォルトを使用しない場合）
 export CLAUDE_PROJECT_DIR=/path/to/your/project
 ```
 
-### 세션별 환경 변수
+### セッション別環境変数
 
-Claude Code 시작 전에 설정하세요:
+Claude Code起動前に設定してください：
 
 ```bash
 SKIP_ERROR_REMINDER=1 claude-code
 ```
 
-## Hook 실행 순서
+## Hook実行順序
 
-Stop hooks는 `settings.json`에 지정된 순서대로 실행됩니다:
+Stop hooksは`settings.json`に指定された順序で実行されます：
 
 ```json
 "Stop": [
   {
     "hooks": [
-      { "command": "...formatter.sh" },    // 첫 번째로 실행
-      { "command": "...build-check.sh" },  // 두 번째로 실행
-      { "command": "...reminder.sh" }      // 세 번째로 실행
+      { "command": "...formatter.sh" },    // 最初に実行
+      { "command": "...build-check.sh" },  // 2番目に実行
+      { "command": "...reminder.sh" }      // 3番目に実行
     ]
   }
 ]
 ```
 
-**이 순서가 중요한 이유:**
-1. 먼저 파일 포맷팅 (깔끔한 코드)
-2. 그 다음 에러 확인
-3. 마지막으로 리마인더 표시
+**この順序が重要な理由：**
+1. まずファイルをフォーマット（きれいなコード）
+2. 次にエラーを確認
+3. 最後にリマインダーを表示
 
-## 선택적 Hook 활성화
+## 選択的Hook有効化
 
-모든 hooks가 필요하지는 않습니다. 프로젝트에 맞는 것을 선택하세요:
+すべてのhooksが必要なわけではありません。プロジェクトに合ったものを選んでください：
 
-### 최소 설정 (Skill 활성화만)
+### 最小設定（Skill活性化のみ）
 
 ```json
 {
@@ -241,7 +241,7 @@ Stop hooks는 `settings.json`에 지정된 순서대로 실행됩니다:
 }
 ```
 
-### 빌드 검사만 (포맷팅 없음)
+### ビルドチェックのみ（フォーマットなし）
 
 ```json
 {
@@ -271,7 +271,7 @@ Stop hooks는 `settings.json`에 지정된 순서대로 실행됩니다:
 }
 ```
 
-### 포맷팅만 (빌드 검사 없음)
+### フォーマットのみ（ビルドチェックなし）
 
 ```json
 {
@@ -301,88 +301,88 @@ Stop hooks는 `settings.json`에 지정된 순서대로 실행됩니다:
 }
 ```
 
-## 캐시 관리
+## キャッシュ管理
 
-### 캐시 위치
+### キャッシュの場所
 
 ```
 $CLAUDE_PROJECT_DIR/.claude/tsc-cache/[session_id]/
 ```
 
-### 수동 캐시 정리
+### 手動キャッシュクリア
 
 ```bash
-# 모든 캐시 데이터 제거
+# すべてのキャッシュデータを削除
 rm -rf $CLAUDE_PROJECT_DIR/.claude/tsc-cache/*
 
-# 특정 세션 제거
+# 特定のセッションを削除
 rm -rf $CLAUDE_PROJECT_DIR/.claude/tsc-cache/[session-id]
 ```
 
-### 자동 정리
+### 自動クリーンアップ
 
-build-check hook은 빌드 성공 시 세션 캐시를 자동으로 정리합니다.
+build-check hookはビルド成功時にセッションキャッシュを自動的にクリーンアップします。
 
-## 설정 문제 해결
+## 設定のトラブルシューティング
 
-### Hook이 실행되지 않음
+### Hookが実行されない
 
-1. **등록 확인:** `.claude/settings.json`에 hook이 있는지 확인
-2. **권한 확인:** `chmod +x .claude/hooks/*.sh` 실행
-3. **경로 확인:** `$CLAUDE_PROJECT_DIR`이 올바르게 설정되었는지 확인
-4. **TypeScript 확인:** `cd .claude/hooks && npx tsc`를 실행하여 에러 확인
+1. **登録を確認：** `.claude/settings.json`にhookがあるか確認
+2. **権限を確認：** `chmod +x .claude/hooks/*.sh`を実行
+3. **パスを確認：** `$CLAUDE_PROJECT_DIR`が正しく設定されているか確認
+4. **TypeScriptを確認：** `cd .claude/hooks && npx tsc`を実行してエラーを確認
 
-### 잘못된 감지 (False Positive)
+### 誤検出（False Positive）
 
-**문제:** Hook이 처리하지 않아야 할 파일에서 트리거됨
+**問題：** Hookが処理すべきでないファイルでトリガーされる
 
-**해결:** 해당 hook에 스킵 조건 추가:
+**解決：** 該当hookにスキップ条件を追加：
 
 ```bash
-# post-tool-use-tracker.sh 내에서
+# post-tool-use-tracker.sh内で
 if [[ "$file_path" =~ /generated/ ]]; then
-    exit 0  # 생성된 파일 스킵
+    exit 0  # 生成されたファイルをスキップ
 fi
 ```
 
-### 성능 문제
+### パフォーマンス問題
 
-**문제:** Hooks가 느림
+**問題：** Hooksが遅い
 
-**해결책:**
-1. TypeScript 검사를 변경된 파일로만 제한
-2. 더 빠른 패키지 매니저 사용 (pnpm > npm)
-3. 스킵 조건 추가
-4. 큰 파일에서 Prettier 비활성화
+**解決策：**
+1. TypeScriptチェックを変更されたファイルのみに制限
+2. より速いパッケージマネージャーを使用 (pnpm > npm)
+3. スキップ条件を追加
+4. 大きなファイルでPrettierを無効化
 
 ```bash
-# stop-prettier-formatter.sh에서 큰 파일 스킵
+# stop-prettier-formatter.shで大きなファイルをスキップ
 file_size=$(wc -c < "$file" 2>/dev/null || echo 0)
-if [[ $file_size -gt 100000 ]]; then  # 100KB보다 큰 파일 스킵
+if [[ $file_size -gt 100000 ]]; then  # 100KBより大きいファイルをスキップ
     continue
 fi
 ```
 
-### Hooks 디버깅
+### Hooksのデバッグ
 
-어떤 hook에든 디버그 출력 추가:
+任意のhookにデバッグ出力を追加：
 
 ```bash
-# hook 스크립트 상단에
-set -x  # 디버그 모드 활성화
+# hookスクリプトの先頭に
+set -x  # デバッグモードを有効化
 
-# 또는 특정 디버그 라인 추가
+# または特定のデバッグ行を追加
 echo "DEBUG: file_path=$file_path" >&2
 echo "DEBUG: repo=$repo" >&2
 ```
 
-Claude Code 로그에서 hook 실행을 확인하세요.
+Claude Codeログでhook実行を確認してください。
 
-## 고급 설정
+## 高度な設定
 
-### 커스텀 Hook 이벤트 핸들러
+### カスタムHookイベントハンドラー
 
-다른 이벤트용으로 자체 hooks를 만들 수 있습니다:
+他のイベント用に独自のhooksを作成できます：
 
 ```json
 {
@@ -402,15 +402,15 @@ Claude Code 로그에서 hook 실행을 확인하세요.
 }
 ```
 
-### 모노레포 설정
+### モノレポ設定
 
-여러 패키지가 있는 모노레포의 경우:
+複数のパッケージがあるモノレポの場合：
 
 ```bash
-# post-tool-use-tracker.sh의 detect_repo() 내에서
+# post-tool-use-tracker.shのdetect_repo()内で
 case "$repo" in
     packages)
-        # 패키지명 가져오기
+        # パッケージ名を取得
         local package=$(echo "$relative_path" | cut -d'/' -f2)
         if [[ -n "$package" ]]; then
             echo "packages/$package"
@@ -421,28 +421,28 @@ case "$repo" in
 esac
 ```
 
-### Docker/컨테이너 프로젝트
+### Docker/コンテナプロジェクト
 
-빌드 명령어가 컨테이너에서 실행되어야 하는 경우:
+ビルドコマンドがコンテナ内で実行される必要がある場合：
 
 ```bash
-# post-tool-use-tracker.sh의 get_build_command() 내에서
+# post-tool-use-tracker.shのget_build_command()内で
 if [[ "$repo" == "api" ]]; then
     echo "docker-compose exec api npm run build"
     return
 fi
 ```
 
-## 모범 사례
+## ベストプラクティス
 
-1. **최소한으로 시작** - hooks를 하나씩 활성화
-2. **철저히 테스트** - 변경 후 hooks 작동 확인
-3. **커스터마이징 문서화** - 커스텀 로직을 설명하는 주석 추가
-4. **버전 관리** - `.claude/` 디렉토리를 git에 커밋
-5. **팀 일관성** - 팀 전체에 설정 공유
+1. **最小限から始める** - hooksを1つずつ有効化
+2. **徹底的にテスト** - 変更後にhooksが動作するか確認
+3. **カスタマイズを文書化** - カスタムロジックを説明するコメントを追加
+4. **バージョン管理** - `.claude/`ディレクトリをgitにコミット
+5. **チームの一貫性** - チーム全体で設定を共有
 
-## 참고 자료
+## 参考資料
 
-- [README.md](./README.md) - Hooks 개요
-- [../../docs/HOOKS_SYSTEM.md](../../docs/HOOKS_SYSTEM.md) - 완전한 hooks 레퍼런스
-- [../../docs/SKILLS_SYSTEM.md](../../docs/SKILLS_SYSTEM.md) - Skills 통합
+- [README.md](./README.md) - Hooks概要
+- [../../docs/HOOKS_SYSTEM.md](../../docs/HOOKS_SYSTEM.md) - 完全なhooksリファレンス
+- [../../docs/SKILLS_SYSTEM.md](../../docs/SKILLS_SYSTEM.md) - Skills統合
