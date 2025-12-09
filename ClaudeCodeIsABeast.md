@@ -17,6 +17,23 @@ style: |
 
 ---
 
+# 📌 このスライドについて
+
+## 出典
+このスライドは以下のReddit投稿に基づいています：
+
+**["Claude Code is a Beast – Tips from 6 Months of Hardcore Use"](https://www.reddit.com/r/ClaudeAI/comments/1oivjvm/claude_code_is_a_beast_tips_from_6_months_of/)**
+
+## リソース
+
+| リソース | URL |
+|----------|-----|
+| **Reddit原文** | https://www.reddit.com/r/ClaudeAI/comments/1oivjvm/claude_code_is_a_beast_tips_from_6_months_of/ |
+| **英語リポジトリ（原本）** | https://github.com/diet103/claude-code-infrastructure-showcase |
+| **日本語リポジトリ** | https://github.com/jung-geun/claude-code-infrastructure-showcase/tree/japanese-translation |
+
+---
+
 # 📋 発表内容
 
 1. **背景 & プロジェクト概要**
