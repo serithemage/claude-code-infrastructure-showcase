@@ -1,5 +1,7 @@
 # Claude Code Infrastructure Showcase
 
+🌐 **[English](https://github.com/diet103/claude-code-infrastructure-showcase)** | **[한국어](https://github.com/jung-geun/claude-code-infrastructure-showcase)**
+
 **本番環境で検証済みのClaude Code infrastructureのリファレンスライブラリです。**
 
 複雑なTypeScript microservicesプロジェクトを6ヶ月間実際に運用して得た経験を基に、このshowcaseは「skillsが自動的にアクティベートされない」問題を解決し、Claude Codeをenterprise開発に合わせて拡張したパターンとシステムを提供します。
